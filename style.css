@@ -1,0 +1,127 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: lightslategray;
+  visibility: hidden;
+}
+
+canvas {
+  display: block;
+}
+
+#finity {
+  margin: auto;
+  width: 950px;
+  border: 3px solid green;
+  /* padding: 10px; */
+  margin-top: 0;
+}
+
+#title{
+  color: white;
+  margin: 20px;
+  font-size: 35px;
+  line-height: 1.5;
+  font-family: 'Ubuntu', sans-serif;
+}
+
+#header {
+  width: 100%;
+  height: 50px;
+  margin-bottom: 10px;
+  background-color: slategray;
+}
+
+#header-container {
+  width: 95%;
+  margin: auto;
+}
+
+#controls{
+  display: inline-flex;
+  float: right;
+  margin: 10px;
+  margin-right: 50px;
+}
+
+#footer {
+  width: 100%;
+  height: 50px;
+  background-color: slategray;
+}
+
+
+#game_container {
+  margin: auto;
+  width: 1200px;
+  display:inline-flex;
+}
+
+.player{
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  width: 200px;
+  height: 322px;
+  padding: 10px;
+  margin: 10px;
+  margin-top: 0px;
+  border: white 2pt solid;
+  opacity: 0.5;
+}
+
+.to-play{
+  border: white 5pt solid;
+  opacity: 1;
+}
+
+#player_1 {
+  background-color: rgb(0, 128, 128);
+}
+
+#player_2 {
+  background-color: rgb(255, 255, 0);
+}
+
+#player_3 {
+  background-color: rgb(255, 0, 0);
+}
+
+#player_4 {
+  background-color: rgb(165, 55, 253);
+}
+
+#player-choice {
+  display: inline-flex;
+  background-color: rgb(100, 100, 110);
+  float: right;
+  margin: 10px;
+  margin-right: 50px;
+}
+
+.p-choice {
+  background-color:aliceblue;
+  height: 30px;
+  width: 30px;
+  margin: 3px;
+}
+
+#p1 {
+  background-color: rgb(0, 128, 128);
+}
+
+#p2 {
+  background-color: rgb(255, 255, 0);
+}
+
+#p3 {
+  background-color: rgb(255, 0, 0);
+}
+
+#p4 {
+  background-color: rgb(165, 55, 253);
+}
+
+.c-btns {
+  margin-right: 10px;
+}
