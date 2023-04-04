@@ -5,7 +5,7 @@ class Board {
     this.p5 = p5;
     this.gm = gm;
     this.imgs = imgs;
-    this.setup_board(3);
+    this.setup_board(2);
   }
 
   draw_board() {

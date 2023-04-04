@@ -72,7 +72,6 @@ const finityCanvas = (props) => {
 
     gm = new GameManager(p5, imgs);
     p5.background(...BG_COLOR);
-
   };
 
   const draw = (p5) => {
