@@ -1,5 +1,6 @@
 class Station {
-  constructor(number, center, pos, { cs, st }, size) {
+  constructor(p5, number, center, pos, { cs, st }, size) {
+    this.p5 = p5;
     this.center = center;
     this.number = number;
     this.x = pos[0];
@@ -17,12 +18,14 @@ class Station {
   }
 
   display() {
-    image(this.img, this.x, this.y, ...this.size);
+    this.p5.image(this.img, this.x, this.y, ...this.size);
 
     // label with number
-    textSize(28);
-    textAlign(CENTER, CENTER);
-    fill(0,0,0,.4);
-    text(this.number, this.x, this.y-50);
+    this.p5.textSize(28);
+    this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
+    this.p5.fill(0,0,0,.4);
+    this.p5.text(this.number, this.x, this.y-50);
   }
 }
+
+export default Station;

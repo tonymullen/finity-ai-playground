@@ -1,10 +1,11 @@
 class Arrow {
-  constructor(color, from_station, to_station, slot, {ab, aw}) {
+  constructor(p5, color, from_station, to_station, slot, {ab, aw}) {
+    this.p5 = p5;
     this.color = color;
     this.from_station = from_station;
     this.to_station = to_station;
     this.slot = slot;
-    this.img = this.color == 'b' ? ab : aw;
+    this.img = this.color === 'b' ? ab : aw;
   }
 
   display() {
@@ -16,12 +17,12 @@ class Arrow {
 
     let angle = 1.1;
 
-    translate(xpos, ypos)
-    rotate(angle)
-    image(
-      this.img, 0, 0)
-    rotate(-angle)
-    translate(-xpos, -ypos)
-
+    this.p5.translate(xpos, ypos)
+    this.p5.rotate(angle)
+    this.p5.image(this.img, 0, 0)
+    this.p5.rotate(-angle)
+    this.p5.translate(-xpos, -ypos)
   }
 }
+
+export default Arrow;
