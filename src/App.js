@@ -40,7 +40,9 @@ function App() {
         <div id="player_3" className="player" ></div>
       </div>
 
-      <FinityCanvas id="finity"></FinityCanvas>
+      <div  id="finity">
+        <FinityCanvas></FinityCanvas>
+      </div>
 
       <div id="players_2_4">
         <div id="player_2" className="player" ></div>

@@ -64,14 +64,17 @@ const finityCanvas = (props) => {
 
   let gm;
   const setup = (p5, canvasParentRef) => {
-    // use parent to render the canvas in this ref
-    // (without that p5 will render the canvas outside of your component)
-    p5.createCanvas(...field).parent(canvasParentRef);
-    p5.colorMode(p5.RGB, 1);
-    p5.imageMode(p5.CENTER);
+    if (!window.p5setup) {
+      window.p5setup = true;
+      // use parent to render the canvas in this ref
+      // (without that p5 will render the canvas outside of your component)
+      p5.createCanvas(...field).parent(canvasParentRef);
+      p5.colorMode(p5.RGB, 1);
+      p5.background(...BG_COLOR);
+      p5.imageMode(p5.CENTER);
 
-    gm = new GameManager(p5, imgs);
-    p5.background(...BG_COLOR);
+      gm = new GameManager(p5, imgs);
+    }
   };
 
   const draw = (p5) => {
