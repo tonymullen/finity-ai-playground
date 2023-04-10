@@ -11,8 +11,11 @@ const field = [PIXEL_WIDTH, PIXEL_HEIGHT]
 let imgs = {};
 let display_handler;
 let game_state;
+let gm;
 
-const finityCanvas = ({ app, gm }) => {
+
+const finityCanvas = ({ app }) => {
+  gm = app.gm;
   const preload = (p5) => {
     p5.loadImage('img/center_station.png',
       (img) => {
@@ -75,15 +78,18 @@ const finityCanvas = ({ app, gm }) => {
       p5.imageMode(p5.CENTER);
 
       gm.set_app(app);
-      display_handler = new DisplayHandler(p5, imgs);
+      display_handler = new DisplayHandler(p5, imgs, BG_COLOR);
     }
   };
 
   const draw = (p5) => {
-    game_state = gm.get_game_state();
-    display_handler.display(game_state);
-    // gm.place_ring('purple', "m", "1,1");
-    // gm.place_arrow('b', "-1,0", "-1,1", "l")
+    if (gm.needs_redraw) {
+      gm.set_needs_redraw(false);
+      game_state = gm.get_game_state();
+      display_handler.display(game_state);
+      gm.place_ring('purple', "m", "1,1");
+      gm.place_arrow('b', "-1,0", "-1,1", "l");
+    }
   };
 
   return <Sketch setup={setup} draw={draw} preload={preload}/>;

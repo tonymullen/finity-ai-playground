@@ -123,11 +123,15 @@ canvas {
 }
 
 .p-active {
+  border: 1px solid white;
+  box-sizing: border-box;
   opacity: 1;
 }
 
 .p-inactive {
-  opacity: 0.5;
+  border: 1px solid slategray;
+  box-sizing: border-box;
+  opacity: 0.2;
 }
 
 .c-btns {

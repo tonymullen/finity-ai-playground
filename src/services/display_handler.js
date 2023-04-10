@@ -1,7 +1,8 @@
 class DisplayHandler {
-    constructor(p5, imgs) {
+    constructor(p5, imgs, BG_COLOR) {
       this.p5 = p5;
       this.imgs = imgs;
+      this.BG_COLOR = BG_COLOR;
 
       this.color_crops = {
         'red': [0, 0, 300, 300],
@@ -12,6 +13,7 @@ class DisplayHandler {
     }
 
     display(game_state) {
+      this.p5.background(...this.BG_COLOR);
       this.draw_board(game_state);
     }
 
@@ -59,7 +61,7 @@ class DisplayHandler {
         ring.station.y,
         100,
         100,
-        ...this.olor_crops[ring.color])
+        ...this.color_crops[ring.color])
     }
 
     draw_base_post(base_post) {
@@ -84,7 +86,7 @@ class DisplayHandler {
   
       this.p5.translate(xpos, ypos)
       this.p5.rotate(angle)
-      this.p5.image(this.img, 0, 0)
+      this.p5.image(arrow_img, 0, 0)
       this.p5.rotate(-angle)
       this.p5.translate(-xpos, -ypos)
     }
