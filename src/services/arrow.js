@@ -1,11 +1,9 @@
 class Arrow {
-  constructor(p5, color, from_station, to_station, slot, {ab, aw}) {
-    this.p5 = p5;
+  constructor(color, from_station, to_station, slot) {
     this.color = color;
     this.from_station = from_station;
     this.to_station = to_station;
     this.slot = slot;
-    this.img = this.color === 'b' ? ab : aw;
   }
 
   display() {

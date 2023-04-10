@@ -1,9 +1,7 @@
-import Station from '../services/station';
+import Station from './station';
 
 class BoardSetup {
-  constructor(p5, count, imgs) {
-    this.p5 = p5;
-    this.imgs = imgs;
+  constructor(count) {
     this.station_size = [200, 200];
     if (count === 2) {
       this.setup = this.twoPlayerSetup();
@@ -54,7 +52,6 @@ class BoardSetup {
 
     this.station_positions = {
       "0,0":    center_pos,
-      // "-1,-1":  [center_pos[0]-offset_side_far, center_pos[1]],
       "-1,0":   [center_pos[0]-offset_side_near, center_pos[1]-offset_vert_sm],
       "0,-1":   [center_pos[0]-offset_side_near, center_pos[1]+offset_vert_sm],
       "-1,1":   [center_pos[0], center_pos[1]-offset_vert_lg],
@@ -97,9 +94,9 @@ class BoardSetup {
   }
 
   set_up_stations(station_numbers, station_positions, size){
-    let stations = {"0,0": new Station(this.p5, "0,0", true, station_positions["0,0"], this.imgs, size)};
+    let stations = {"0,0": new Station("0,0", true, station_positions["0,0"], size)};
     station_numbers.forEach(stat => {
-      stations[stat] = new Station(this.p5, stat, false, station_positions[stat], this.imgs, size)
+      stations[stat] = new Station(stat, false, station_positions[stat], size)
     });
     return stations;
   }

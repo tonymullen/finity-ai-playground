@@ -57,7 +57,7 @@ canvas {
   display:inline-flex;
 }
 
-.player{
+.player-panel{
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -106,20 +106,28 @@ canvas {
   margin: 3px;
 }
 
-#p1 {
+#p-cyan {
   background-color: rgb(0, 128, 128);
 }
 
-#p2 {
+#p-yellow {
   background-color: rgb(255, 255, 0);
 }
 
-#p3 {
+#p-red {
   background-color: rgb(255, 0, 0);
 }
 
-#p4 {
+#p-purple {
   background-color: rgb(165, 55, 253);
+}
+
+.p-active {
+  opacity: 1;
+}
+
+.p-inactive {
+  opacity: 0.5;
 }
 
 .c-btns {

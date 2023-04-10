@@ -1,19 +1,21 @@
+import { useState, useEffect, useCallback } from 'react';
+import GameManager from "./services/game_manager";
 import FinityCanvas from "./components/FinityCanvas";
+import PlayerPanel from "./components/PlayerPanel";
+import PlayerPicker from "./components/PlayerPicker";
+
 import './App.css';
 
 function App() {
+  const gm = new GameManager();
+
   return (
     <div className="App">
       <div id="header">
         <div id="header-container">
         <span id="title">Finity AI Playground</span>
 
-        <div id="player-choice">
-          <div id="p1" className="p-choice"></div>
-          <div id="p2" className="p-choice"></div>
-          <div id="p3" className="p-choice"></div>
-          <div id="p4" className="p-choice"></div>
-        </div>
+        <PlayerPicker gm={ gm } />
 
         <div id="controls">
           <div id="play-btn" className="c-btns">
@@ -36,17 +38,17 @@ function App() {
     </div>
     <div id="game_container">
       <div id="players_1_3">
-        <div id="player_1" className="player" ></div>
-        <div id="player_3" className="player" ></div>
+        <PlayerPanel player="player_1" gm={ gm } />
+        <PlayerPanel player="player_3" gm={ gm } />
       </div>
 
       <div  id="finity">
-        <FinityCanvas></FinityCanvas>
+        <FinityCanvas app={this} gm={ gm }></FinityCanvas>
       </div>
 
       <div id="players_2_4">
-        <div id="player_2" className="player" ></div>
-        <div id="player_4" className="player" ></div>
+        <PlayerPanel player="player_2" gm={ gm } />
+        <PlayerPanel player="player_4" gm={ gm } />
       </div>
     </div>
   </div>

@@ -1,25 +1,47 @@
-import BasePost from '../services/base_post';
-import Arrow from '../services/arrow';
-import Ring from '../services/ring';
-import Board from '../services/board';
+import BasePost from './base_post';
+import Arrow from './arrow';
+import Ring from './ring';
+import Board from './board';
 
 
 class GameManager {
-  constructor(p5, imgs) {
-    this.p5 = p5;
-    this.imgs = imgs;
-    this.board = new Board(p5, this, imgs);
-    this.path_pattern = ['b','w','b','w','b','b','b','w']
+  constructor(app) {
+    this.app = app;
+    this.board = new Board(this);
+    this.players = {
+      'red': true,
+      'cyan': true,
+      'purple': true,
+      'yellow': true
+    };
     this.game_state = {
+      board: this.board,
+      path_pattern: ['b','w','b','w','b','b','b','w'],
       arrows: [],
       rings: [],
       base_posts: [
-        new BasePost(this.p5, 'red', this.board.stations['0,1'], imgs),
-        new BasePost(this.p5, 'cyan', this.board.stations['1,0'], imgs),
-        new BasePost(this.p5, 'purple', this.board.stations['-1,0'], imgs),
-        new BasePost(this.p5, 'yellow', this.board.stations['0,-1'], imgs),
+        new BasePost('red', this.board.stations['0,1']),
+        new BasePost('cyan', this.board.stations['1,0']),
+        new BasePost('purple', this.board.stations['-1,0']),
+        new BasePost('yellow', this.board.stations['0,-1']),
       ]
     }
+  }
+
+  set_app(app) {
+    this.app = app;
+  }
+
+  color_is_playing(color) {
+    if (this.is_setup) {
+      return this.players[color];
+    } else {
+      return true;
+    }
+  }
+
+  toggle_player(color) {
+    this.players[color] = !this.players[color];
   }
 
   move_base_post(color, station) {
@@ -27,7 +49,7 @@ class GameManager {
   }
 
   place_ring(color, size, station) {
-    let ring = new Ring(this.p5, color, size, this.board.stations[station], this.imgs);
+    let ring = new Ring(color, size, this.board.stations[station]);
     this.game_state.rings.push(ring);
   }
 
@@ -36,12 +58,12 @@ class GameManager {
       let start = this.board.stations[start_stat];
       let dest = this.board.stations[dest_stat];
 
-      let arrow = new Arrow(this.p5, color, start, dest, slot, this.imgs);
+      let arrow = new Arrow(color, start, dest, slot);
       this.game_state.arrows.push(arrow);
-    }
+  }
 
-  game_state() {
-
+  get_game_state() {
+    return this.game_state;
   }
 }
 

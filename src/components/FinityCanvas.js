@@ -1,7 +1,7 @@
 import React from "react";
 import Sketch from "react-p5";
 
-import GameManager from '../services/game_manager';
+import DisplayHandler from "../services/display_handler";
 
 const PIXEL_WIDTH = 950
 const PIXEL_HEIGHT = 650
@@ -9,8 +9,10 @@ const BG_COLOR = [.4, .6, .5]
 const field = [PIXEL_WIDTH, PIXEL_HEIGHT]
 
 let imgs = {};
+let display_handler;
+let game_state;
 
-const finityCanvas = (props) => {
+const finityCanvas = ({ app, gm }) => {
   const preload = (p5) => {
     p5.loadImage('img/center_station.png',
       (img) => {
@@ -62,7 +64,6 @@ const finityCanvas = (props) => {
     });
   }
 
-  let gm;
   const setup = (p5, canvasParentRef) => {
     if (!window.p5setup) {
       window.p5setup = true;
@@ -73,14 +74,16 @@ const finityCanvas = (props) => {
       p5.background(...BG_COLOR);
       p5.imageMode(p5.CENTER);
 
-      gm = new GameManager(p5, imgs);
+      gm.set_app(app);
+      display_handler = new DisplayHandler(p5, imgs);
     }
   };
 
   const draw = (p5) => {
-    gm.board.draw_board();
-    gm.place_ring('purple', "m", "1,1");
-    gm.place_arrow('b', "-1,0", "-1,1", "l")
+    game_state = gm.get_game_state();
+    display_handler.display(game_state);
+    // gm.place_ring('purple', "m", "1,1");
+    // gm.place_arrow('b', "-1,0", "-1,1", "l")
   };
 
   return <Sketch setup={setup} draw={draw} preload={preload}/>;
