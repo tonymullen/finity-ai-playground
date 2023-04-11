@@ -79,12 +79,10 @@ class GameManager {
   set_up_base_posts() {
     let base_posts = [];
     this.player_colors().forEach( (color, ind) => {
-      console.log(this.board.start_stations[ind])
       base_posts.push(new BasePost(color, this.board.stations[
         this.board.start_stations[ind]
       ]));
     });
-    console.log(base_posts);
     return base_posts;
   }
 
