@@ -51,7 +51,7 @@ class DisplayHandler {
       this.p5.textSize(28);
       this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
       this.p5.fill(0,0,0,.4);
-      this.p5.text(this.number, this.x, this.y-50);
+      this.p5.text(station.number, station.x, station.y-50);
     }
 
     draw_ring(ring) {

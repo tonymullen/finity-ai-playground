@@ -19,12 +19,7 @@ class GameManager {
       path_pattern: ['b','w','b','w','b','b','b','w'],
       arrows: [],
       rings: [],
-      base_posts: [
-        new BasePost('cyan', this.board.stations['0,1']),
-        new BasePost('yellow', this.board.stations['1,0']),
-        new BasePost('purple', this.board.stations['-1,0']),
-        new BasePost('red', this.board.stations['0,-1']),
-      ]
+      base_posts: this.set_up_base_posts(),
     }
     this.needs_redraw = true;
   }
@@ -56,7 +51,7 @@ class GameManager {
   }
 
   move_base_post(color, station) {
-
+    
   }
 
   place_ring(color, size, station) {
@@ -81,9 +76,22 @@ class GameManager {
     this.needs_redraw = bool;
   }
 
+  set_up_base_posts() {
+    let base_posts = [];
+    this.player_colors().forEach( (color, ind) => {
+      console.log(this.board.start_stations[ind])
+      base_posts.push(new BasePost(color, this.board.stations[
+        this.board.start_stations[ind]
+      ]));
+    });
+    console.log(base_posts);
+    return base_posts;
+  }
+
   reset_board(num) {
-    if (num != this.board.num_players) {
+    if (num !== this.board.num_players) {
       this.board.setup_board(num);
+      this.game_state.base_posts = this.set_up_base_posts();
       this.app.setState({});
       this.needs_redraw = true;
     }

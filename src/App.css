@@ -76,7 +76,7 @@ canvas {
 }
 
 #player_1 {
-  background-color: rgb(0, 128, 128);
+  background-color: rgb(50, 150, 150);
 }
 
 
@@ -93,7 +93,7 @@ canvas {
 }
 
 #player_cyan {
-  background-color: rgb(0, 128, 128);
+  background-color: rgb(50, 150, 150);
 }
 
 
@@ -125,7 +125,7 @@ canvas {
 }
 
 #p-cyan {
-  background-color: rgb(0, 128, 128);
+  background-color: rgb(50, 150, 150);
 }
 
 #p-yellow {

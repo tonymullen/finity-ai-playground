@@ -15,6 +15,8 @@ class Board {
     this.station_size = board_setup.station_size;
     this.stations = board_setup.stations;
     this.station_positions = board_setup.station_positions;
+    this.start_stations = board_setup.start_stations;
+    console.log(`Board setup for ${num} players, ${this.start_stations}`);
   }
 }
 

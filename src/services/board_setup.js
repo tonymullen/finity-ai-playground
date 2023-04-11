@@ -19,6 +19,7 @@ class BoardSetup {
     this.station_numbers = [
       "-1,-1", "-1,0", "0,-1", "-1,1", "1,1", "0,1", "1,-1", "1,0"
     ]
+    this.start_stations = ["-1,1", "1,-1"];
 
     let center_pos = [400, 325];
     let offset_side_near = 145;
@@ -43,6 +44,7 @@ class BoardSetup {
     this.station_numbers = [
       "-2,1", "1,-2", "-1,0", "0,-1", "-1,1", "1,1", "0,1", "1,-1", "1,0"
     ]
+    this.start_stations = ["-1,0", "0,1", "1,-1"];
 
     let center_pos = [400, 325];
     let offset_side_near = 145;
@@ -69,6 +71,7 @@ class BoardSetup {
       "-2,1", "-1,-1", "1,-2", "-1,0", "0,-1", "-1,1",
       "1,1", "0,1", "1,-1", "1,0", "-1,2", "2,-1"
     ]
+    this.start_stations = ["-1,0", "0,1", "1,0", "0,-1"];
 
     let center_pos = [400, 325];
     let offset_side_near = 145;
