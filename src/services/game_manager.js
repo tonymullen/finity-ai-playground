@@ -9,10 +9,10 @@ class GameManager {
     this.app = app;
     this.board = new Board(this);
     this.players = {
-      'red': true,
       'cyan': true,
+      'yellow': true,
       'purple': true,
-      'yellow': true
+      'red': true
     };
     this.game_state = {
       board: this.board,
@@ -20,10 +20,10 @@ class GameManager {
       arrows: [],
       rings: [],
       base_posts: [
-        new BasePost('red', this.board.stations['0,1']),
-        new BasePost('cyan', this.board.stations['1,0']),
+        new BasePost('cyan', this.board.stations['0,1']),
+        new BasePost('yellow', this.board.stations['1,0']),
         new BasePost('purple', this.board.stations['-1,0']),
-        new BasePost('yellow', this.board.stations['0,-1']),
+        new BasePost('red', this.board.stations['0,-1']),
       ]
     }
     this.needs_redraw = true;

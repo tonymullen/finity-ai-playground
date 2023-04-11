@@ -44,8 +44,16 @@ class App extends React.Component {
       </div>
       <div id="game_container">
         <div id="players_1_3">
-          <PlayerPanel player="player_1" gm={ this.gm } />
-          <PlayerPanel player="player_3" gm={ this.gm } />
+          { this.gm.player_colors()[0] && (
+            <PlayerPanel player={ "player_"+this.gm.player_colors()[0] } gm={ this.gm } />
+          )}
+          { this.gm.player_colors()[3] ? (
+            <PlayerPanel player={ "player_"+this.gm.player_colors()[3] } gm={ this.gm } />
+          ) : (
+            this.gm.player_colors()[2] && (
+              <PlayerPanel player={ "player_"+this.gm.player_colors()[2] } gm={ this.gm } />
+            )
+          )}
         </div>
 
         <div  id="finity">
@@ -53,8 +61,12 @@ class App extends React.Component {
         </div>
 
         <div id="players_2_4">
-          <PlayerPanel player="player_2" gm={ this.gm } />
-          <PlayerPanel player="player_4" gm={ this.gm } />
+          { this.gm.player_colors()[1] && (
+            <PlayerPanel player={ "player_"+this.gm.player_colors()[1] } gm={ this.gm } />
+          )}
+          { this.gm.player_colors()[3] && (
+            <PlayerPanel player={ "player_"+this.gm.player_colors()[2] } gm={ this.gm } />
+          )}
         </div>
       </div>
     </div>
