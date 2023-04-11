@@ -1,18 +1,14 @@
-import Dropdown from 'react-bootstrap/Dropdown';
+import Form from 'react-bootstrap/Form';
 
 const PlayerPanel = ({ player, gm }) => {
   return (
     <div  id={ player } className="player-panel">
-      <Dropdown>
-        <Dropdown.Toggle variant="dark" id="dropdown-basic">
-          Player Agent
-        </Dropdown.Toggle>
-        <Dropdown.Menu>
-          <Dropdown.Item href="#/action-1">Human</Dropdown.Item>
-          <Dropdown.Item href="#/action-2">AI 1</Dropdown.Item>
-          <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
+      <Form.Select aria-label="select player agent">
+        <option>Player Agent</option>
+        <option value="human">Human</option>
+        <option value="ai1">AI 1</option>
+        <option value="ai2">AI 2</option>
+      </Form.Select>
     </div>
   )
 }

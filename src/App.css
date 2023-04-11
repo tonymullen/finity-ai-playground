@@ -155,3 +155,8 @@ canvas {
 .c-btns {
   margin-right: 10px;
 }
+
+.form-select {
+  background-color: black;
+  color: white;
+}
