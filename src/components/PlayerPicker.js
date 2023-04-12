@@ -7,7 +7,6 @@ const PlayerPicker = ({ gm }) => {
             <PlayerPickButton color="yellow" gm={ gm } />
             <PlayerPickButton color="purple" gm={ gm } />
             <PlayerPickButton color="red" gm={ gm } />
-
         </div>
     )
   }

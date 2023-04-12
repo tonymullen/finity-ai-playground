@@ -29,6 +29,10 @@ const finityCanvas = ({ app }) => {
       (img) => {
         imgs.bp = img;
       });
+    p5.loadImage('img/blockers.png',
+      (img) => {
+        imgs.bl = img;
+      });
     p5.loadImage('img/indicator_black_side.png',
       (img) => {
         imgs.ind_side_b = img;
@@ -89,6 +93,9 @@ const finityCanvas = ({ app }) => {
       display_handler.display(game_state);
       gm.place_ring('purple', "m", "1,1");
       gm.place_arrow('b', "-1,0", "-1,1", "l");
+      gm.place_arrow('b', "-1,1", "0,1", "m");
+      gm.place_arrow('w', "1,1", "1,0", "r");
+      gm.place_blocker('red', "0,-1", "0,0", "l");
     }
   };
 

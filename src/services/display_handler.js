@@ -10,6 +10,15 @@ class DisplayHandler {
         'purple': [0, 300, 300, 300],
         'yellow': [300, 0, 300, 300],
       }
+
+      this.rotations = {
+        'up': 0,
+        'up_right': 1.1,
+        'up_left': -1.1,
+        'down_right': Math.PI - 1.1,
+        'down_left': Math.PI + 1.1,
+        'down': Math.PI,
+      }
     }
 
     display(game_state) {
@@ -36,6 +45,10 @@ class DisplayHandler {
   
       game_state.arrows.forEach(arrow => {
         this.draw_arrow(arrow);
+      });
+
+      game_state.blockers.forEach(blocker => {
+        this.draw_blocker(blocker);
       })
   
       game_state.rings.forEach(ring => {
@@ -74,6 +87,7 @@ class DisplayHandler {
         ...this.color_crops[base_post.color]) 
     }
 
+
     draw_arrow(arrow) {
       let arrow_img = arrow.color === 'b' ? this.imgs.ab : this.imgs.aw;
       arrow_img.resize(90, 90);
@@ -81,14 +95,80 @@ class DisplayHandler {
       let ypos = (arrow.from_station.y + arrow.to_station.y)/2;
       let rise = arrow.from_station.y - arrow.to_station.y;
       let run = arrow.from_station.x - arrow.to_station.x;
+    
+      let angle = this.rotations[this.angle_label(rise, run)];
+
+      this.p5.translate(xpos, ypos);
+      this.p5.rotate(angle);
+      this.p5.translate(this.slot_offset(arrow.slot), 0);
+
+      this.p5.image(arrow_img, 0, 0);
+
+      this.p5.translate(-this.slot_offset(arrow.slot), 0);
+      this.p5.rotate(-angle);
+      this.p5.translate(-xpos, -ypos);
+    }
+
+    draw_blocker(blocker) {
+      let blocker_img = this.imgs.bl;
+      //blocker_img.resize(90, 90);
+      let xpos = (blocker.from_station.x + blocker.to_station.x)/2;
+      let ypos = (blocker.from_station.y + blocker.to_station.y)/2;
+      let rise = blocker.from_station.y - blocker.to_station.y;
+      let run = blocker.from_station.x - blocker.to_station.x;
   
-      let angle = 1.1;
+      let angle = this.rotations[this.angle_label(rise, run)];
   
-      this.p5.translate(xpos, ypos)
-      this.p5.rotate(angle)
-      this.p5.image(arrow_img, 0, 0)
-      this.p5.rotate(-angle)
-      this.p5.translate(-xpos, -ypos)
+      this.p5.translate(xpos, ypos);
+      this.p5.rotate(angle);
+      this.p5.translate(this.slot_offset(blocker.slot), 0);
+
+      this.p5.image(blocker_img, 0, 0,
+        100,
+        100,
+        ...this.color_crops[blocker.color]);
+
+      this.p5.translate(-this.slot_offset(blocker.slot), 0);
+      this.p5.rotate(-angle);
+      this.p5.translate(-xpos, -ypos);
+    }
+
+    slot_offset(slot) {
+      let slot_offset = 0;
+      if (slot === 'l') {
+        slot_offset = -30;
+      } else if (slot === 'r') {
+        slot_offset = 30;
+      }
+      return slot_offset;
+    }
+
+    angle_label(rise, run) {
+      let angle_label = "";
+      if (rise > 0) {
+        if (run > 0) {
+          angle_label = "down_right";
+        } else if (run < 0) {
+          angle_label = "down_left";
+        } else {
+          angle_label = "down";
+        }
+      } else if (rise < 0) {
+        if (run > 0) {
+          angle_label = "up_right";
+        } else if (run < 0) {
+          angle_label = "up_left";
+        } else {
+          angle_label = "up";
+        }
+      } else {
+        if (run > 0) {
+          angle_label = "right";
+        } else if (run < 0) {
+          angle_label = "left";
+        }
+      }
+      return angle_label;
     }
 }
 

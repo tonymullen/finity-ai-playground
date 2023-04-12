@@ -1,5 +1,6 @@
 import BasePost from './base_post';
 import Arrow from './arrow';
+import Blocker from './blocker';
 import Ring from './ring';
 import Board from './board';
 
@@ -19,8 +20,16 @@ class GameManager {
       path_pattern: ['b','w','b','w','b','b','b','w'],
       arrows: [],
       rings: [],
+      blockers:  this.set_up_blockers(),
       base_posts: this.set_up_base_posts(),
+    };
+    this.player_agents = {
+      'cyan': 'human',
+      'yellow': 'human',
+      'purple': 'human',
+      'red': 'human'
     }
+    this.move_in_progress = false;
     this.needs_redraw = true;
   }
 
@@ -68,12 +77,28 @@ class GameManager {
       this.game_state.arrows.push(arrow);
   }
 
+  place_blocker(color, start_stat, dest_stat, slot){
+    // 'b', "-1,0", "-1,1", "l"
+    let start = this.board.stations[start_stat];
+    let dest = this.board.stations[dest_stat];
+
+    let blocker = new Blocker(color, start, dest, slot);
+    this.game_state.blockers.push(blocker);
+  }
+
   get_game_state() {
     return this.game_state;
   }
 
   set_needs_redraw(bool) {
     this.needs_redraw = bool;
+  }
+
+  set_player_agent(color, agent) {
+    console.log(`setting ${agent} agent for`, color)
+    this.player_agents[color] = agent;
+    this.app.setState({});
+    this.needs_redraw = true;
   }
 
   set_up_base_posts() {
@@ -86,13 +111,38 @@ class GameManager {
     return base_posts;
   }
 
+  set_up_blockers() {
+    let blockers= [];
+    this.player_colors().forEach( (color, ind) => {
+      blockers.push(new Blocker(color, 
+        this.board.stations[
+          this.board.start_stations[ind]],
+        this.board.stations['0,0'],
+        'l'
+        ));
+      blockers.push(new Blocker(color,
+        this.board.stations[
+          this.board.start_stations[ind]],
+        this.board.stations['0,0'],
+        'r'
+        ));
+    });
+    return blockers;
+  }
+
   reset_board(num) {
     if (num !== this.board.num_players) {
       this.board.setup_board(num);
       this.game_state.base_posts = this.set_up_base_posts();
+      this.game_state.blockers = this.set_up_blockers();
+
       this.app.setState({});
       this.needs_redraw = true;
     }
+  }
+
+  start_move(move) {
+    this.move_in_progress = move;
   }
 }
 
