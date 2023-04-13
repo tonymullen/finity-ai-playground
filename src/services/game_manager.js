@@ -31,6 +31,7 @@ class GameManager {
     }
     this.player_moving = null;
     this.move_in_progress = false;
+    this.move_to_finalize = null;
     this.needs_redraw = true;
   }
 
@@ -64,8 +65,12 @@ class GameManager {
     
   }
 
-  place_ring(color, size, station) {
-    let ring = new Ring(color, size, this.board.stations[station]);
+  place_ring(color, size, station, ring) {
+    if (!ring) {
+      // console.log("Creating a ring from scratch")
+      ring = new Ring(color, size, this.board.stations[station]);
+    }
+    // console.log(this.game_state);
     this.game_state.rings.push(ring);
     this.board.stations[station].rings.push(ring);
   }
@@ -109,6 +114,9 @@ class GameManager {
       base_posts.push(new BasePost(color, this.board.stations[
         this.board.start_stations[ind]
       ]));
+      this.board.stations[
+        this.board.start_stations[ind]
+      ].base_post = color;
     });
     return base_posts;
   }
@@ -144,6 +152,7 @@ class GameManager {
   }
 
   start_move(player, move_type) {
+    console.log(`starting ${move_type} move for ${player}`)
     this.player_moving = player;
     this.move_in_progress = move_type;
 
@@ -156,15 +165,42 @@ class GameManager {
       let preview = null;
       Object.keys(this.board.stations).forEach( stat_key => {
         let station = this.board.stations[stat_key];
-        if (Math.abs(mouse_x - station.x) < 50 && 
-            Math.abs(mouse_y - station.y) < 50) {
-             let preview_ring = new Ring(this.player_moving, 's', station);
-             preview = preview_ring;
-        } 
+        if (Math.abs(mouse_x - station.x) < 30 && 
+            Math.abs(mouse_y - station.y) < 30) {
+              if (this.can_place_ring(station, this.player_moving)) {
+                let size = 's';
+                if (station.rings.length === 1) {
+                  size = 'm';
+                } else if (station.rings.length === 2) {
+                  size = 'l';
+                }
+                let preview_ring = new Ring(this.player_moving, size, station);
+                preview = preview_ring;
+            }
+        }
       });
+      this.needs_redraw = true;
       return preview;
     }
+  }
 
+  can_place_ring(station, color) {
+    return ((station.rings.length < 3) && 
+            (station.base_post !== color))
+  }
+
+  handle_move_click() {
+    if (this.move_to_finalize) {
+      if (this.move_to_finalize.constructor.name === 'Ring') {
+        this.place_ring(null, null, null, this.move_to_finalize);
+
+        // this.move_in_progress = false;
+        // this.move_to_finalize = null;
+
+        this.app.setState({});
+        this.needs_redraw = true;
+      }
+    }
   }
 }
 

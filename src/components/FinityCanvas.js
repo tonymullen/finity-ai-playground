@@ -26,14 +26,6 @@ const finityCanvas = ({ app }) => {
       (img) => {
         imgs.st = img;
       });
-    p5.loadImage('img/base_posts.png',
-      (img) => {
-        imgs.bp = img;
-      });
-    p5.loadImage('img/blockers.png',
-      (img) => {
-        imgs.bl = img;
-      });
     p5.loadImage('img/indicator_black_side.png',
       (img) => {
         imgs.ind_side_b = img;
@@ -50,6 +42,22 @@ const finityCanvas = ({ app }) => {
       (img) => {
         imgs.ind_top_w = img;
       });
+    p5.loadImage('img/base_posts.png',
+      (img) => {
+        imgs.bp = img;
+      });
+    p5.loadImage('img/base_posts_preview.png',
+      (img) => {
+        imgs.bp_prev = img;
+      });
+    p5.loadImage('img/blockers.png',
+      (img) => {
+        imgs.bl = img;
+      });
+    p5.loadImage('img/blockers_preview.png',
+      (img) => {
+        imgs.bl_prev = img;
+      });
     p5.loadImage('img/rings_small.png',
       (img) => {
         imgs.rings_s = img;
@@ -62,26 +70,41 @@ const finityCanvas = ({ app }) => {
       (img) => {
         imgs.rings_m = img;
       });
+    p5.loadImage('img/rings_medium_preview.png',
+      (img) => {
+        imgs.rings_m_prev = img;
+      });
     p5.loadImage('img/rings_large.png',
       (img) => {
         imgs.rings_l = img;
+      });
+    p5.loadImage('img/rings_large_preview.png',
+      (img) => {
+        imgs.rings_l_prev = img;
       });
     p5.loadImage('img/arrow_black.png',
       (img) => {
         imgs.ab = img;
       });
+    p5.loadImage('img/arrow_black_preview.png',
+      (img) => {
+        imgs.ab_prev = img;
+      });
     p5.loadImage('img/arrow_white.png',
-    img => {
-      imgs.aw = img;
-    });
+      img => {
+        imgs.aw = img;
+      });
+    p5.loadImage('img/arrow_white_preview.png',
+      img => {
+        imgs.aw_prev = img;
+      });
   }
 
   const setup = (p5, canvasParentRef) => {
     if (!window.p5setup) {
       window.p5setup = true;
-      // use parent to render the canvas in this ref
-      // (without that p5 will render the canvas outside of your component)
-      p5.createCanvas(...field).parent(canvasParentRef);
+
+      const cnv = p5.createCanvas(...field).parent(canvasParentRef);
       p5.colorMode(p5.RGB, 1);
       p5.background(...BG_COLOR);
       p5.imageMode(p5.CENTER);
@@ -92,10 +115,22 @@ const finityCanvas = ({ app }) => {
       gm.place_ring('purple', "s", "1,1");
       gm.place_ring('red', "s", "-1,1");
       gm.place_ring('red', "m", "-1,1");
+      gm.place_ring('cyan', "s", "-1,-1");
+      gm.place_ring('cyan', "m", "-1,-1");
+      gm.place_ring('cyan', "l", "-1,-1");
       gm.place_arrow('b', "-1,0", "-1,1", "l");
       gm.place_arrow('b', "-1,1", "0,1", "m");
       gm.place_arrow('w', "1,1", "1,0", "r");
       gm.place_blocker('red', "0,-1", "0,0", "l");
+
+      // Define handlers on canvas rather than as props
+      // defining as props yields double event firing
+      cnv.mousePressed((_) => {
+        gm.handle_move_click();
+      });
+      cnv.mouseMoved((_) => {
+        move_preview = gm.generate_move_preview(p5.mouseX, p5.mouseY);
+      });
     }
   };
 
@@ -107,12 +142,9 @@ const finityCanvas = ({ app }) => {
     }
   }
 
-  const mouseMoved = (p5) => {
-      move_preview = gm.generate_move_preview(p5.mouseX, p5.mouseY);
-      gm.needs_redraw = true;
-  };
-
-  return <Sketch setup={setup} draw={draw} mouseMoved={mouseMoved} preload={preload}/>;
+  return <Sketch setup={setup} 
+                draw={draw} 
+                preload={preload}/>;
 };
 
 export default finityCanvas;

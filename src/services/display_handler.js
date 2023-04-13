@@ -1,4 +1,3 @@
-import Ring from './ring.js';
 
 class DisplayHandler {
     constructor(p5, imgs, BG_COLOR) {
@@ -115,7 +114,6 @@ class DisplayHandler {
 
     draw_blocker(blocker) {
       let blocker_img = this.imgs.bl;
-      //blocker_img.resize(90, 90);
       let xpos = (blocker.from_station.x + blocker.to_station.x)/2;
       let ypos = (blocker.from_station.y + blocker.to_station.y)/2;
       let rise = blocker.from_station.y - blocker.to_station.y;
@@ -138,7 +136,6 @@ class DisplayHandler {
     }
 
     draw_move_preview(ring) {
-      // this.p5.tint(1., .5);
       this.p5.image(
         this.imgs['rings_'+ring.size+'_prev'],
         ring.station.x,
@@ -146,7 +143,6 @@ class DisplayHandler {
         100,
         100,
         ...this.color_crops[ring.color]);
-      this.p5.tint(1., 1.);
     }
 
     slot_offset(slot) {

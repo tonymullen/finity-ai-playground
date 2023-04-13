@@ -6,6 +6,7 @@ class Station {
     this.y = pos[1];
     this.size = size;
     this.rings = [];
+    this.base_post = null;
     this.slots = [// clockwise from top
       [ null, null, null ], // left to right (clockwise)
       [ null, null, null ],

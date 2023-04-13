@@ -1,9 +1,6 @@
-import { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 
 const HumanControlPanel = ({ player, gm }) => {
-  const [move, setMove] = useState(null);
-
   return (
     <div id={ player } className="player-controls">
       <Form.Select 
@@ -21,6 +18,7 @@ const HumanControlPanel = ({ player, gm }) => {
         <option value="rev-arrow">Reverse Arrow</option>
         <option value="rem-arrow">Remove Arrow</option>
         <option value="opp-blocker">Remove Opponent's Blocker</option>
+        <option value="concede">Concede the Game</option>
       </Form.Select>
       {
         (gm.player_moving === player && 
