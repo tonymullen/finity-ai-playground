@@ -54,6 +54,10 @@ const finityCanvas = ({ app }) => {
       (img) => {
         imgs.rings_s = img;
       });
+    p5.loadImage('img/rings_small_preview.png',
+      (img) => {
+        imgs.rings_s_prev = img;
+      });
     p5.loadImage('img/rings_medium.png',
       (img) => {
         imgs.rings_m = img;

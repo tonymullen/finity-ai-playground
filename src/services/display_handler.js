@@ -138,9 +138,9 @@ class DisplayHandler {
     }
 
     draw_move_preview(ring) {
-      this.p5.tint(1., .5);
+      // this.p5.tint(1., .5);
       this.p5.image(
-        this.imgs['rings_'+ring.size],
+        this.imgs['rings_'+ring.size+'_prev'],
         ring.station.x,
         ring.station.y,
         100,
