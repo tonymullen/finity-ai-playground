@@ -1,3 +1,5 @@
+import Ring from './ring.js';
+
 class DisplayHandler {
     constructor(p5, imgs, BG_COLOR) {
       this.p5 = p5;
@@ -21,9 +23,12 @@ class DisplayHandler {
       }
     }
 
-    display(game_state) {
+    display(game_state, move_in_progress) {
       this.p5.background(...this.BG_COLOR);
       this.draw_board(game_state);
+      if (move_in_progress) {
+        this.draw_move_preview(move_in_progress);
+      }
     }
 
     draw_board(game_state) {
@@ -49,11 +54,11 @@ class DisplayHandler {
 
       game_state.blockers.forEach(blocker => {
         this.draw_blocker(blocker);
-      })
+      });
   
       game_state.rings.forEach(ring => {
         this.draw_ring(ring);
-      })
+      });
     }
 
     draw_station(station) {
@@ -86,7 +91,6 @@ class DisplayHandler {
         100,
         ...this.color_crops[base_post.color]) 
     }
-
 
     draw_arrow(arrow) {
       let arrow_img = arrow.color === 'b' ? this.imgs.ab : this.imgs.aw;
@@ -131,6 +135,18 @@ class DisplayHandler {
       this.p5.translate(-this.slot_offset(blocker.slot), 0);
       this.p5.rotate(-angle);
       this.p5.translate(-xpos, -ypos);
+    }
+
+    draw_move_preview(ring) {
+      this.p5.tint(1., .5);
+      this.p5.image(
+        this.imgs['rings_'+ring.size],
+        ring.station.x,
+        ring.station.y,
+        100,
+        100,
+        ...this.color_crops[ring.color]);
+      this.p5.tint(1., 1.);
     }
 
     slot_offset(slot) {

@@ -25,6 +25,9 @@ class App extends React.Component {
           <PlayerPicker gm={ this.gm } />
 
           <div id="controls">
+            <div id="reset-btn" className="c-btns">
+              <img src={require("./img/noun-reset-outline.png")} height="35" alt="play button"></img>
+            </div>
             <div id="play-btn" className="c-btns">
               <img src={require("./img/noun-play-outline.png")} height="35" alt="play button"></img>
             </div>

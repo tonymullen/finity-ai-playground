@@ -29,6 +29,7 @@ class GameManager {
       'purple': 'human',
       'red': 'human'
     }
+    this.player_moving = null;
     this.move_in_progress = false;
     this.needs_redraw = true;
   }
@@ -66,6 +67,7 @@ class GameManager {
   place_ring(color, size, station) {
     let ring = new Ring(color, size, this.board.stations[station]);
     this.game_state.rings.push(ring);
+    this.board.stations[station].rings.push(ring);
   }
 
   place_arrow(color, start_stat, dest_stat, slot){
@@ -141,8 +143,28 @@ class GameManager {
     }
   }
 
-  start_move(move) {
-    this.move_in_progress = move;
+  start_move(player, move_type) {
+    this.player_moving = player;
+    this.move_in_progress = move_type;
+
+    this.app.setState({});
+    this.needs_redraw = true;
+  }
+
+  generate_move_preview(mouse_x, mouse_y) {
+    if (this.move_in_progress === 'ring') {
+      let preview = null;
+      Object.keys(this.board.stations).forEach( stat_key => {
+        let station = this.board.stations[stat_key];
+        if (Math.abs(mouse_x - station.x) < 50 && 
+            Math.abs(mouse_y - station.y) < 50) {
+             let preview_ring = new Ring(this.player_moving, 's', station);
+             preview = preview_ring;
+        } 
+      });
+      return preview;
+    }
+
   }
 }
 

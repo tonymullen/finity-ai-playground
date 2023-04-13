@@ -10,6 +10,7 @@ const HumanControlPanel = ({ player, gm }) => {
         aria-label="select player agent"
         onChange={(e)=>{
           // gm.set_player_agent(player, e.target.value);
+          gm.start_move(player, e.target.value)
         }}>
         <option>Select Move</option>
         <option value="b-arrow">Place Black Arrow</option>
@@ -21,6 +22,13 @@ const HumanControlPanel = ({ player, gm }) => {
         <option value="rem-arrow">Remove Arrow</option>
         <option value="opp-blocker">Remove Opponent's Blocker</option>
       </Form.Select>
+      {
+        (gm.player_moving === player && 
+        gm.move_in_progress === "ring") && (
+        <div className="moveInstruction">
+          Click on a station to place a ring
+        </div>)
+      }
     </div>
 
   )

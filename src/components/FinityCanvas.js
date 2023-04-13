@@ -11,6 +11,7 @@ const field = [PIXEL_WIDTH, PIXEL_HEIGHT]
 let imgs = {};
 let display_handler;
 let game_state;
+let move_preview = null;
 let gm;
 
 
@@ -83,15 +84,10 @@ const finityCanvas = ({ app }) => {
 
       gm.set_app(app);
       display_handler = new DisplayHandler(p5, imgs, BG_COLOR);
-    }
-  };
 
-  const draw = (p5) => {
-    if (gm.needs_redraw) {
-      gm.set_needs_redraw(false);
-      game_state = gm.get_game_state();
-      display_handler.display(game_state);
-      gm.place_ring('purple', "m", "1,1");
+      gm.place_ring('purple', "s", "1,1");
+      gm.place_ring('red', "s", "-1,1");
+      gm.place_ring('red', "m", "-1,1");
       gm.place_arrow('b', "-1,0", "-1,1", "l");
       gm.place_arrow('b', "-1,1", "0,1", "m");
       gm.place_arrow('w', "1,1", "1,0", "r");
@@ -99,7 +95,20 @@ const finityCanvas = ({ app }) => {
     }
   };
 
-  return <Sketch setup={setup} draw={draw} preload={preload}/>;
+  const draw = (p5) => {
+    if (gm.needs_redraw) {
+      gm.set_needs_redraw(false);
+      game_state = gm.get_game_state();
+      display_handler.display(game_state, move_preview);
+    }
+  }
+
+  const mouseMoved = (p5) => {
+      move_preview = gm.generate_move_preview(p5.mouseX, p5.mouseY);
+      gm.needs_redraw = true;
+  };
+
+  return <Sketch setup={setup} draw={draw} mouseMoved={mouseMoved} preload={preload}/>;
 };
 
 export default finityCanvas;
