@@ -23,12 +23,14 @@ class GameManager {
       blockers:  this.set_up_blockers(),
       base_posts: this.set_up_base_posts(),
     };
+    // default player agent is local human
     this.player_agents = {
-      'cyan': 'human',
-      'yellow': 'human',
-      'purple': 'human',
-      'red': 'human'
+      'cyan': 'human-loc',
+      'yellow': 'human-loc',
+      'purple': 'human-loc',
+      'red': 'human-loc'
     }
+    this.turn_index = 0;
     this.player_moving = null;
     this.move_in_progress = false;
     this.move_to_finalize = null;
@@ -48,8 +50,7 @@ class GameManager {
     if (!this.players[color] || this.player_count()  > 2) {
       this.players[color] = !this.players[color];
       this.reset_board(this.player_count());
-      this.app.setState({});
-      this.needs_redraw = true;
+      this.redraw();
     }
   }
 
@@ -65,14 +66,17 @@ class GameManager {
     
   }
 
-  place_ring(color, size, station, ring) {
+  place_ring(color, size, station_id, ring) {
     if (!ring) {
       // console.log("Creating a ring from scratch")
-      ring = new Ring(color, size, this.board.stations[station]);
+      ring = new Ring(color, size, this.board.stations[station_id]);
+    } else {
+      //  console.log("Reusing a ring")
+      station_id= ring.station.number;
     }
     // console.log(this.game_state);
     this.game_state.rings.push(ring);
-    this.board.stations[station].rings.push(ring);
+    this.board.stations[station_id].rings.push(ring);
   }
 
   place_arrow(color, start_stat, dest_stat, slot){
@@ -104,8 +108,7 @@ class GameManager {
   set_player_agent(color, agent) {
     console.log(`setting ${agent} agent for`, color)
     this.player_agents[color] = agent;
-    this.app.setState({});
-    this.needs_redraw = true;
+    this.redraw();
   }
 
   set_up_base_posts() {
@@ -146,8 +149,7 @@ class GameManager {
       this.game_state.base_posts = this.set_up_base_posts();
       this.game_state.blockers = this.set_up_blockers();
 
-      this.app.setState({});
-      this.needs_redraw = true;
+      this.redraw();
     }
   }
 
@@ -156,8 +158,7 @@ class GameManager {
     this.player_moving = player;
     this.move_in_progress = move_type;
 
-    this.app.setState({});
-    this.needs_redraw = true;
+    this.redraw();
   }
 
   generate_move_preview(mouse_x, mouse_y) {
@@ -179,7 +180,8 @@ class GameManager {
             }
         }
       });
-      this.needs_redraw = true;
+      this.move_to_finalize = preview;
+      this.redraw();
       return preview;
     }
   }
@@ -194,13 +196,25 @@ class GameManager {
       if (this.move_to_finalize.constructor.name === 'Ring') {
         this.place_ring(null, null, null, this.move_to_finalize);
 
-        // this.move_in_progress = false;
-        // this.move_to_finalize = null;
-
-        this.app.setState({});
-        this.needs_redraw = true;
+        this.move_in_progress = false;
+        this.move_to_finalize = null;
+        this.next_turn();
+        this.redraw();
       }
     }
+  }
+
+  next_turn() {
+    this.turn_index = (this.turn_index + 1) % this.player_count();
+  }
+
+  is_turn() {
+    return this.player_colors()[this.turn_index];
+  }
+
+  redraw() {
+    this.app.setState({});
+    this.needs_redraw = true;
   }
 }
 

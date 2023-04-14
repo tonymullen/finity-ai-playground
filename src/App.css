@@ -173,3 +173,16 @@ canvas {
     padding: 5px;
     height: 85%;
 }
+
+.no-play-panel {
+  position: relative;
+  background: rgba(0, 0, 0, 0.5);
+  height: 320px;
+  width: 199px;
+  top: -312px;
+  left: -12px;
+}
+
+.to-play-panel {
+  display: none;
+}

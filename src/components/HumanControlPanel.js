@@ -4,12 +4,14 @@ const HumanControlPanel = ({ player, gm }) => {
   return (
     <div id={ player } className="player-controls">
       <Form.Select 
+        value={ player===gm.player_moving ? gm.move_in_progress: "select" }
         aria-label="select player agent"
         onChange={(e)=>{
           // gm.set_player_agent(player, e.target.value);
           gm.start_move(player, e.target.value)
+          gm.redraw();
         }}>
-        <option>Select Move</option>
+        <option value="select">Select Move</option>
         <option value="b-arrow">Place Black Arrow</option>
         <option value="w-arrow">Place White Arrow</option>
         <option value="ring">Place Ring</option>
@@ -22,7 +24,7 @@ const HumanControlPanel = ({ player, gm }) => {
       </Form.Select>
       {
         (gm.player_moving === player && 
-        gm.move_in_progress === "ring") && (
+         gm.move_in_progress === "ring") && (
         <div className="moveInstruction">
           Click on a station to place a ring
         </div>)
