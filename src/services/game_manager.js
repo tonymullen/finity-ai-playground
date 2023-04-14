@@ -62,8 +62,14 @@ class GameManager {
     return Object.keys(this.players).filter( p => this.players[p]);
   }
 
-  move_base_post(color, station) {
-    
+  move_base_post(base_post) {
+    console.log(base_post);
+    this.game_state.base_posts.forEach( bp => {
+      if (bp.color === base_post.color) {
+        bp.station.base_post = null;
+        bp.station = base_post.station;
+      }
+    });
   }
 
   place_ring(color, size, station_id, ring) {
@@ -178,6 +184,7 @@ class GameManager {
             }
         }
       });
+      this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'base-post') {
       Object.keys(this.board.stations).forEach( stat_key => {
         let station = this.board.stations[stat_key];
@@ -188,8 +195,9 @@ class GameManager {
             }
           }
       });
+      this.move_to_finalize = preview;
     }
-    this.move_to_finalize = preview;
+    
     this.redraw();
     return preview;
   }
@@ -207,7 +215,13 @@ class GameManager {
     if (this.move_to_finalize) {
       if (this.move_to_finalize.constructor.name === 'Ring') {
         this.place_ring(null, null, null, this.move_to_finalize);
-
+        this.move_in_progress = false;
+        this.move_to_finalize = null;
+        this.next_turn();
+        this.redraw();
+      }
+      else if (this.move_to_finalize.constructor.name === 'BasePost') {
+        this.move_base_post(this.move_to_finalize);
         this.move_in_progress = false;
         this.move_to_finalize = null;
         this.next_turn();
