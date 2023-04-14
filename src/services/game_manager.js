@@ -17,7 +17,8 @@ class GameManager {
     };
     this.game_state = {
       board: this.board,
-      path_pattern: ['b','w','b','w','b','b','b','w'],
+      // path_pattern: ['b','w','b','w','b','b','b','w'],
+      path_pattern: this.generate_path_pattern(),
       arrows: [],
       rings: [],
       blockers:  this.set_up_blockers(),
@@ -237,6 +238,17 @@ class GameManager {
   is_turn() {
     return this.player_colors()[this.turn_index];
   }
+
+  generate_path_pattern() {
+    const colors = ['b', 'w'];
+    let pattern = Array.from({length: 8}, () => colors[Math.round(Math.random())]);
+    while (pattern.filter( (color) => color === 'b').length < 2 ||
+        pattern.filter( (color) => color === 'w').length < 2) {
+          // bad pattern, try again
+          pattern = Array.from({length: 8}, () => colors[Math.round(Math.random())]);
+        }
+    return pattern;
+  } 
 
   redraw() {
     this.app.setState({});
