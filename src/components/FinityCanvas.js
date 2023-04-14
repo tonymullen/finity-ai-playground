@@ -112,16 +112,9 @@ const finityCanvas = ({ app }) => {
       gm.set_app(app);
       display_handler = new DisplayHandler(p5, imgs, BG_COLOR);
 
-      gm.place_ring('purple', "s", "1,1");
-      gm.place_ring('red', "s", "-1,1");
-      gm.place_ring('red', "m", "-1,1");
-      gm.place_ring('cyan', "s", "-1,-1");
-      gm.place_ring('cyan', "m", "-1,-1");
-      gm.place_ring('cyan', "l", "-1,-1");
       gm.place_arrow('b', "-1,0", "-1,1", "l");
       gm.place_arrow('b', "-1,1", "0,1", "m");
       gm.place_arrow('w', "1,1", "1,0", "r");
-      gm.place_blocker('red', "0,-1", "0,0", "l");
 
       // Define handlers on canvas rather than as props
       // defining as props yields double event firing

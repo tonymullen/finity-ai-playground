@@ -135,14 +135,26 @@ class DisplayHandler {
       this.p5.translate(-xpos, -ypos);
     }
 
-    draw_move_preview(ring) {
-      this.p5.image(
-        this.imgs['rings_'+ring.size+'_prev'],
-        ring.station.x,
-        ring.station.y,
-        100,
-        100,
-        ...this.color_crops[ring.color]);
+    draw_move_preview(move) {
+      if (move.constructor.name == 'Ring'){
+        let ring = move;
+        this.p5.image(
+          this.imgs['rings_'+ring.size+'_prev'],
+          ring.station.x,
+          ring.station.y,
+          100,
+          100,
+          ...this.color_crops[ring.color]);
+      } else if (move.constructor.name == 'BasePost') {
+        let base_post = move;
+        this.p5.image(
+          this.imgs['bp_prev'],
+          base_post.station.x,
+          base_post.station.y,
+          100,
+          100,
+          ...this.color_crops[base_post.color])
+      }
     }
 
     slot_offset(slot) {

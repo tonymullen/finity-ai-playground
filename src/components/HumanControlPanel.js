@@ -29,6 +29,13 @@ const HumanControlPanel = ({ player, gm }) => {
           Click on a station to place a ring
         </div>)
       }
+      {
+        (gm.player_moving === player && 
+         gm.move_in_progress === "base-post") && (
+        <div className="moveInstruction">
+          Click on a station to move the base post to
+        </div>)
+      }
     </div>
 
   )

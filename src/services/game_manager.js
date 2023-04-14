@@ -154,16 +154,15 @@ class GameManager {
   }
 
   start_move(player, move_type) {
-    console.log(`starting ${move_type} move for ${player}`)
     this.player_moving = player;
     this.move_in_progress = move_type;
-
+    console.log(`starting ${move_type} move for ${player}`)
     this.redraw();
   }
 
   generate_move_preview(mouse_x, mouse_y) {
+    let preview = null;
     if (this.move_in_progress === 'ring') {
-      let preview = null;
       Object.keys(this.board.stations).forEach( stat_key => {
         let station = this.board.stations[stat_key];
         if (Math.abs(mouse_x - station.x) < 30 && 
@@ -175,20 +174,33 @@ class GameManager {
                 } else if (station.rings.length === 2) {
                   size = 'l';
                 }
-                let preview_ring = new Ring(this.player_moving, size, station);
-                preview = preview_ring;
+                preview =  new Ring(this.player_moving, size, station);   
             }
         }
       });
-      this.move_to_finalize = preview;
-      this.redraw();
-      return preview;
+    } else if (this.move_in_progress === 'base-post') {
+      Object.keys(this.board.stations).forEach( stat_key => {
+        let station = this.board.stations[stat_key];
+        if (Math.abs(mouse_x - station.x) < 30 && 
+            Math.abs(mouse_y - station.y) < 30) {
+              if (this.can_move_base_post(station, this.player_moving)) {
+                preview  = new BasePost(this.player_moving, station);
+            }
+          }
+      });
     }
+    this.move_to_finalize = preview;
+    this.redraw();
+    return preview;
   }
 
   can_place_ring(station, color) {
     return ((station.rings.length < 3) && 
             (station.base_post !== color))
+  }
+
+  can_move_base_post(station, color) {
+    return (!station.base_post);
   }
 
   handle_move_click() {
