@@ -17,7 +17,6 @@ class GameManager {
     };
     this.game_state = {
       board: this.board,
-      // path_pattern: ['b','w','b','w','b','b','b','w'],
       path_pattern: this.generate_path_pattern(),
       arrows: [],
       rings: [],
@@ -35,6 +34,7 @@ class GameManager {
     this.player_moving = null;
     this.move_in_progress = false;
     this.move_to_finalize = null;
+    this.piece_to_move = null;
     this.needs_redraw = true;
   }
 
@@ -75,13 +75,12 @@ class GameManager {
 
   place_ring(color, size, station_id, ring) {
     if (!ring) {
-      // console.log("Creating a ring from scratch")
+      // Creating a ring from scratch
       ring = new Ring(color, size, this.board.stations[station_id]);
     } else {
-      //  console.log("Reusing a ring")
+      //  Reusing a ring
       station_id= ring.station.number;
     }
-    // console.log(this.game_state);
     this.game_state.rings.push(ring);
     this.board.stations[station_id].rings.push(ring);
   }
@@ -113,7 +112,6 @@ class GameManager {
   }
 
   set_player_agent(color, agent) {
-    console.log(`setting ${agent} agent for`, color)
     this.player_agents[color] = agent;
     this.redraw();
   }
@@ -163,7 +161,6 @@ class GameManager {
   start_move(player, move_type) {
     this.player_moving = player;
     this.move_in_progress = move_type;
-    console.log(`starting ${move_type} move for ${player}`)
     this.redraw();
   }
 
@@ -197,6 +194,8 @@ class GameManager {
           }
       });
       this.move_to_finalize = preview;
+    } else if (this.move_in_progress === 'blocker') {
+      
     }
     
     this.redraw();
@@ -228,6 +227,15 @@ class GameManager {
         this.next_turn();
         this.redraw();
       }
+      else if (this.move_to_finalize.constructor.name === 'Blocker') {
+        this.place_blocker(this.move_to_finalize);
+        this.move_in_progress = false;
+        this.move_to_finalize = null;
+        this.next_turn();
+        this.redraw();
+      }
+    } else if (this.move_in_progress === 'blocker') {
+      this.piece_to_move = this.select_blocker_to_move();
     }
   }
 
