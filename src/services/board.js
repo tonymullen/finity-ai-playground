@@ -15,6 +15,7 @@ class Board {
     this.stations = board_setup.stations;
     this.station_positions = board_setup.station_positions;
     this.start_stations = board_setup.start_stations;
+    this.slots = board_setup.slots;
   }
 }
 

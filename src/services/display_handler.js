@@ -33,9 +33,30 @@ class DisplayHandler {
     draw_board(game_state) {
       let board = game_state.board;
       let path_pattern = game_state.path_pattern;
+
+      // Draw stations
       Object.keys(board.stations).forEach( stat_key => {
         this.draw_station(board.stations[stat_key]);
       });
+
+      // Visualize slot click areas
+      let visualize_slots = true;
+      if (visualize_slots) {
+        board.slots.forEach(slot => {
+          if(slot.midpoint) {
+            this.p5.fill(.5, 0, 0, 0.2);
+            this.p5.noStroke();
+            this.p5.circle(...slot.midpoint, 30);
+          }
+          if(slot.to_points) {
+            Object.keys(slot.to_points).forEach(to_station =>{
+              this.p5.fill(0, 0.5, 0, 0.2);
+              this.p5.noStroke();
+              this.p5.circle(...slot.to_points[to_station], 30);
+            })
+          }
+        });
+      }
   
       [...path_pattern].reverse().forEach((cone, ind) => {
         this.p5.image(cone === 'b'  ? 
@@ -136,7 +157,7 @@ class DisplayHandler {
     }
 
     draw_move_preview(move) {
-      if (move.constructor.name == 'Ring'){
+      if (move.constructor.name === 'Ring'){
         let ring = move;
         this.p5.image(
           this.imgs['rings_'+ring.size+'_prev'],
@@ -145,7 +166,7 @@ class DisplayHandler {
           100,
           100,
           ...this.color_crops[ring.color]);
-      } else if (move.constructor.name == 'BasePost') {
+      } else if (move.constructor.name === 'BasePost') {
         let base_post = move;
         this.p5.image(
           this.imgs['bp_prev'],

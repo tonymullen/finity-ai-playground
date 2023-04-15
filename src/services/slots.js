@@ -4,6 +4,7 @@ class Slot {
     this.contains = null;
     this.blocked = false;
     this.interferes_with = [];
+    this.location = null;
   }
 }
 
@@ -329,16 +330,14 @@ station_numbers.forEach((from_station) => {
     if (station_slots[from_station][to_station]){
       ['l', 'c', 'r'].forEach((slot_pos) => {
         station_slots[from_station][to_station][slot_pos].stations = {
-          from_station: to_station,
-          to_station: from_station
+          [from_station]: to_station,
+          [to_station]: from_station
           }
-        station_slots[from_station][to_station][slot_pos].location = [
-          (from_station.x + to_station.x)/2,
-          (from_station.y + to_station.y)/2
-        ]
+        station_slots[from_station][to_station][slot_pos].midpoint = null;
+        station_slots[from_station][to_station][slot_pos].to_points = {};
       });
     }
   });
 }); 
 
-export { slots, station_slots }
+export { station_slots }
