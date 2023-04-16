@@ -80,12 +80,14 @@ class BoardSetup {
           let mid_x = (stations[from_stat_id].x + stations[to_stat_id].x) / 2;
           let mid_y = (stations[from_stat_id].y + stations[to_stat_id].y) / 2;
 
-          let to_point_x = (stations[from_stat_id].x + (2*stations[to_stat_id].x)) / 3;
-          let to_point_y = (stations[from_stat_id].y + (2*stations[to_stat_id].y)) / 3;
+          let to_point_x = (stations[from_stat_id].x + (1.3*stations[to_stat_id].x)) / 2.3;
+          let to_point_y = (stations[from_stat_id].y + (1.3*stations[to_stat_id].y)) / 2.3;
 
           let distance = 0.18;
           let rise = stations[to_stat_id].y - stations[from_stat_id].y;
           let run =  stations[to_stat_id].x - stations[from_stat_id].x;
+          slot.rise = rise;
+          slot.run = run;
           if (slot_pos === "c") {
             slot.midpoint = [mid_x, mid_y];
             slot.to_points[to_stat_id] = [to_point_x, to_point_y];

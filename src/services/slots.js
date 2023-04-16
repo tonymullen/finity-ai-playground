@@ -5,12 +5,37 @@ class Slot {
     this.blocked = false;
     this.interferes_with = [];
     this.location = null;
+    this.rotation = null;
+  }
+
+  add_blocker(blocker) {
+    this.contains = blocker;
+    this.blocked = true;
+  }
+
+  add_arrow(arrow) {
+    this.contains = arrow;
+    this.blocked = true;
+  }
+
+  block() {
+    this.blocked = true;
+  }
+
+  clear() {
+    this.contains = null;
+    this.blocked = false;
+  }
+
+  unblock() {
+    this.blocked = false;
   }
 }
 
 const slots = Array.from({length: 72}, 
     () => new Slot()
   );
+
 
 slots[0].interferes_with = [17, 18];
 slots[2].interferes_with = [3, 27];
@@ -340,4 +365,4 @@ station_numbers.forEach((from_station) => {
   });
 }); 
 
-export { station_slots }
+export { slots, station_slots }

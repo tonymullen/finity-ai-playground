@@ -14,7 +14,6 @@ let game_state;
 let move_preview = null;
 let gm;
 
-
 const finityCanvas = ({ app }) => {
   gm = app.gm;
   const preload = (p5) => {
@@ -112,9 +111,9 @@ const finityCanvas = ({ app }) => {
       gm.set_app(app);
       display_handler = new DisplayHandler(p5, imgs, BG_COLOR);
 
-      gm.place_arrow('b', "-1,0", "-1,1", "l");
-      gm.place_arrow('b', "-1,1", "0,1", "m");
-      gm.place_arrow('w', "1,1", "1,0", "r");
+      // gm.place_arrow('b', "-1,0", "-1,1", "l");
+      // gm.place_arrow('b', "-1,1", "0,1", "m");
+      // gm.place_arrow('w', "1,1", "1,0", "r");
 
       // Define handlers on canvas rather than as props
       // defining as props yields double event firing

@@ -32,7 +32,7 @@ class GameManager {
     }
     this.turn_index = 0;
     this.player_moving = null;
-    this.move_in_progress = false;
+    this.move_in_progress = null;
     this.move_to_finalize = null;
     this.piece_to_move = null;
     this.needs_redraw = true;
@@ -94,13 +94,13 @@ class GameManager {
       this.game_state.arrows.push(arrow);
   }
 
-  place_blocker(color, start_stat, dest_stat, slot){
-    // 'b', "-1,0", "-1,1", "l"
-    let start = this.board.stations[start_stat];
-    let dest = this.board.stations[dest_stat];
-
-    let blocker = new Blocker(color, start, dest, slot);
-    this.game_state.blockers.push(blocker);
+  place_blocker(blocker){
+      this.game_state.blockers.push(blocker);
+      this.game_state.blockers = this.game_state.blockers.filter( 
+        b => b.to_move === false 
+      );
+      this.move_to_finalize.slot.contains = null;
+      this.move_to_finalize = null;
   }
 
   get_game_state() {
@@ -164,8 +164,17 @@ class GameManager {
     this.redraw();
   }
 
+  cancel_move() {
+    this.player_moving = null;
+    this.move_in_progress = null;
+    this.move_to_finalize = null;
+    this.piece_to_move.to_move = false;
+    this.piece_to_move = null;
+    this.redraw();
+  }
+
   generate_move_preview(mouse_x, mouse_y) {
-    let preview = null;
+    let preview = this.move_to_finalize;
     if (this.move_in_progress === 'ring') {
       Object.keys(this.board.stations).forEach( stat_key => {
         let station = this.board.stations[stat_key];
@@ -195,9 +204,36 @@ class GameManager {
       });
       this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'blocker') {
-      
+      this.game_state.blockers.forEach( blocker => {
+        if (Math.abs(mouse_x - blocker.slot.midpoint[0]) < 15 && 
+            Math.abs(mouse_y - blocker.slot.midpoint[1]) < 15 && 
+            blocker.color === this.player_moving){
+              this.piece_to_move = blocker;
+              blocker.to_move = true;
+          } else {
+            blocker.to_move = false;
+          }
+      });
+    } else if (this.move_in_progress === 'blocker-place') {
+      if (mouse_x < 50 || mouse_x > 750 ||
+            mouse_y < 1 || mouse_y > 648) {
+              console.log(mouse_x, mouse_y);
+              console.log("Should cancel move");
+              this.cancel_move();
+              return;
+            }
+      this.board.slots.forEach( slot => {
+        if (Math.abs(mouse_x - slot.midpoint[0]) < 20 && 
+            Math.abs(mouse_y - slot.midpoint[1]) < 20) {
+              console.log(mouse_x, mouse_y);
+              if (slot.contains === null) {
+                slot.preview_blocker.color = this.player_moving;
+                preview = slot.preview_blocker;                
+            }
+        } 
+      });
+      this.move_to_finalize = preview;
     }
-    
     this.redraw();
     return preview;
   }
@@ -235,7 +271,7 @@ class GameManager {
         this.redraw();
       }
     } else if (this.move_in_progress === 'blocker') {
-      this.piece_to_move = this.select_blocker_to_move();
+      this.move_in_progress = 'blocker-place';
     }
   }
 

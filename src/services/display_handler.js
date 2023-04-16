@@ -40,23 +40,23 @@ class DisplayHandler {
       });
 
       // Visualize slot click areas
-      let visualize_slots = true;
-      if (visualize_slots) {
-        board.slots.forEach(slot => {
-          if(slot.midpoint) {
-            this.p5.fill(.5, 0, 0, 0.2);
-            this.p5.noStroke();
-            this.p5.circle(...slot.midpoint, 30);
-          }
-          if(slot.to_points) {
-            Object.keys(slot.to_points).forEach(to_station =>{
-              this.p5.fill(0, 0.5, 0, 0.2);
-              this.p5.noStroke();
-              this.p5.circle(...slot.to_points[to_station], 30);
-            })
-          }
-        });
-      }
+      // let visualize_slots = false;
+      // if (visualize_slots) {
+      //   board.slots.forEach(slot => {
+      //     if(slot.midpoint) {
+      //       this.p5.fill(.5, 0, 0, 0.2);
+      //       this.p5.noStroke();
+      //       this.p5.circle(...slot.midpoint, 25);
+      //     }
+      //     if(slot.to_points) {
+      //       Object.keys(slot.to_points).forEach(to_station =>{
+      //         this.p5.fill(0, 0.5, 0, 0.2);
+      //         this.p5.noStroke();
+      //         this.p5.circle(...slot.to_points[to_station], 25);
+      //       })
+      //     }
+      //   });
+      // }
   
       [...path_pattern].reverse().forEach((cone, ind) => {
         this.p5.image(cone === 'b'  ? 
@@ -134,26 +134,27 @@ class DisplayHandler {
     }
 
     draw_blocker(blocker) {
-      let blocker_img = this.imgs.bl;
-      let xpos = (blocker.from_station.x + blocker.to_station.x)/2;
-      let ypos = (blocker.from_station.y + blocker.to_station.y)/2;
-      let rise = blocker.from_station.y - blocker.to_station.y;
-      let run = blocker.from_station.x - blocker.to_station.x;
+      let blocker_img;
+      if (blocker.to_move) {
+        blocker_img = this.imgs.bl_prev;
+      } else {
+        blocker_img = this.imgs.bl;
+      };
+      let rise = blocker.slot.rise;
+      let run = blocker.slot.run;
   
       let angle = this.rotations[this.angle_label(rise, run)];
-  
-      this.p5.translate(xpos, ypos);
+ 
+      this.p5.translate(blocker.slot.midpoint[0], blocker.slot.midpoint[1]);
       this.p5.rotate(angle);
-      this.p5.translate(this.slot_offset(blocker.slot), 0);
 
       this.p5.image(blocker_img, 0, 0,
         100,
         100,
         ...this.color_crops[blocker.color]);
-
-      this.p5.translate(-this.slot_offset(blocker.slot), 0);
+            
       this.p5.rotate(-angle);
-      this.p5.translate(-xpos, -ypos);
+      this.p5.translate(-blocker.slot.midpoint[0], -blocker.slot.midpoint[1]);
     }
 
     draw_move_preview(move) {
@@ -175,6 +176,24 @@ class DisplayHandler {
           100,
           100,
           ...this.color_crops[base_post.color])
+      } else if (move.constructor.name === 'Blocker') {
+        let blocker = move;
+        let blocker_img = this.imgs.bl_prev;
+        let rise = blocker.slot.rise;
+        let run = blocker.slot.run;
+    
+        let angle = this.rotations[this.angle_label(rise, run)];
+
+        this.p5.translate(blocker.slot.midpoint[0], blocker.slot.midpoint[1]);
+        this.p5.rotate(angle);
+        
+        this.p5.image(blocker_img, 0, 0,
+          100,
+          100,
+          ...this.color_crops[blocker.color]);
+              
+        this.p5.rotate(-angle);
+        this.p5.translate(-blocker.slot.midpoint[0], -blocker.slot.midpoint[1]);
       }
     }
 
