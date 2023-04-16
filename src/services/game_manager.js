@@ -95,12 +95,15 @@ class GameManager {
   }
 
   place_blocker(blocker){
+      blocker.is_preview = false;
+      blocker.slot.contains = blocker;
+      blocker.slot.blocked = true;
       this.game_state.blockers.push(blocker);
       this.game_state.blockers = this.game_state.blockers.filter( 
-        b => b.to_move === false 
+        b => !b.to_move 
       );
-      this.move_to_finalize.slot.contains = null;
-      this.move_to_finalize = null;
+      this.piece_to_move.slot.contains = null;
+      this.piece_to_move = null;
   }
 
   get_game_state() {
@@ -153,7 +156,6 @@ class GameManager {
       this.board.setup_board(num);
       this.game_state.base_posts = this.set_up_base_posts();
       this.game_state.blockers = this.set_up_blockers();
-
       this.redraw();
     }
   }
@@ -174,7 +176,13 @@ class GameManager {
   }
 
   generate_move_preview(mouse_x, mouse_y) {
+    const move_cancel_x_range = [50, 750];
+    const move_cancel_y_range = [1,  648];
     let preview = this.move_to_finalize;
+    if (mouse_x < move_cancel_x_range[0] || mouse_x > move_cancel_x_range[1] ||
+      mouse_y < move_cancel_y_range[0] || mouse_y > move_cancel_y_range[1]) {
+        preview = null;
+      }
     if (this.move_in_progress === 'ring') {
       Object.keys(this.board.stations).forEach( stat_key => {
         let station = this.board.stations[stat_key];
@@ -215,17 +223,15 @@ class GameManager {
           }
       });
     } else if (this.move_in_progress === 'blocker-place') {
-      if (mouse_x < 50 || mouse_x > 750 ||
-            mouse_y < 1 || mouse_y > 648) {
-              console.log(mouse_x, mouse_y);
-              console.log("Should cancel move");
+      // cancel move if mouse is outside of board
+      if (mouse_x < move_cancel_x_range[0] || mouse_x > move_cancel_x_range[1] ||
+            mouse_y < move_cancel_y_range[0] || mouse_y > move_cancel_y_range[1]) {
               this.cancel_move();
               return;
             }
       this.board.slots.forEach( slot => {
         if (Math.abs(mouse_x - slot.midpoint[0]) < 20 && 
             Math.abs(mouse_y - slot.midpoint[1]) < 20) {
-              console.log(mouse_x, mouse_y);
               if (slot.contains === null) {
                 slot.preview_blocker.color = this.player_moving;
                 preview = slot.preview_blocker;                
