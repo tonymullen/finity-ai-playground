@@ -74,32 +74,34 @@ class BoardSetup {
     let slots = [];
     Object.keys(stations).forEach(from_stat_id => {
       Object.keys(stations[from_stat_id].slots).forEach(to_stat_id => {
-        Object.keys(stations[from_stat_id].slots[to_stat_id]).forEach(slot_pos => {
-          let slot = stations[from_stat_id].slots[to_stat_id][slot_pos];
-          
-          let mid_x = (stations[from_stat_id].x + stations[to_stat_id].x) / 2;
-          let mid_y = (stations[from_stat_id].y + stations[to_stat_id].y) / 2;
+        if (to_stat_id in stations) {
+          Object.keys(stations[from_stat_id].slots[to_stat_id]).forEach(slot_pos => {
+            let slot = stations[from_stat_id].slots[to_stat_id][slot_pos];
+            
+            let mid_x = (stations[from_stat_id].x + stations[to_stat_id].x) / 2;
+            let mid_y = (stations[from_stat_id].y + stations[to_stat_id].y) / 2;
 
-          let to_point_x = (stations[from_stat_id].x + (1.3*stations[to_stat_id].x)) / 2.3;
-          let to_point_y = (stations[from_stat_id].y + (1.3*stations[to_stat_id].y)) / 2.3;
+            let to_point_x = (stations[from_stat_id].x + (1.3*stations[to_stat_id].x)) / 2.3;
+            let to_point_y = (stations[from_stat_id].y + (1.3*stations[to_stat_id].y)) / 2.3;
 
-          let distance = 0.18;
-          let rise = stations[to_stat_id].y - stations[from_stat_id].y;
-          let run =  stations[to_stat_id].x - stations[from_stat_id].x;
-          slot.rise = rise;
-          slot.run = run;
-          if (slot_pos === "c") {
-            slot.midpoint = [mid_x, mid_y];
-            slot.to_points[to_stat_id] = [to_point_x, to_point_y];
-          } else if (slot_pos === "r") {
-            slot.midpoint = [mid_x + distance*rise, mid_y - distance*run];
-            slot.to_points[to_stat_id] = [to_point_x + distance*rise, to_point_y - distance*run];
-          } else if (slot_pos === "l") {
-            slot.midpoint = [mid_x - distance*rise, mid_y + distance*run];
-            slot.to_points[to_stat_id] = [to_point_x - distance*rise, to_point_y + distance*run]
-          }
-          slots.push(slot);
-         });
+            let distance = 0.18;
+            let rise = stations[to_stat_id].y - stations[from_stat_id].y;
+            let run =  stations[to_stat_id].x - stations[from_stat_id].x;
+            slot.rise = rise;
+            slot.run = run;
+            if (slot_pos === "c") {
+              slot.midpoint = [mid_x, mid_y];
+              slot.to_points[to_stat_id] = [to_point_x, to_point_y];
+            } else if (slot_pos === "r") {
+              slot.midpoint = [mid_x + distance*rise, mid_y - distance*run];
+              slot.to_points[to_stat_id] = [to_point_x + distance*rise, to_point_y - distance*run];
+            } else if (slot_pos === "l") {
+              slot.midpoint = [mid_x - distance*rise, mid_y + distance*run];
+              slot.to_points[to_stat_id] = [to_point_x - distance*rise, to_point_y + distance*run]
+            }
+            slots.push(slot);
+          });
+        }
        });
     });
     return slots;

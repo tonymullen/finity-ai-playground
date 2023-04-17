@@ -194,6 +194,24 @@ class DisplayHandler {
               
         this.p5.rotate(-angle);
         this.p5.translate(-blocker.slot.midpoint[0], -blocker.slot.midpoint[1]);
+      } else if (move.constructor.name === 'Arrow') {
+
+        let arrow = move;
+        let arrow_img = arrow.color === 'b' ? this.imgs.ab_prev : this.imgs.aw_prev;
+        arrow_img.resize(90, 90);
+
+        let rise = arrow.slot.rise;
+        let run = arrow.slot.run;
+      
+        let angle = this.rotations[this.angle_label(rise, run)];
+  
+        this.p5.translate(arrow.slot.midpoint[0], arrow.slot.midpoint[1]);
+        this.p5.rotate(angle);
+
+        this.p5.image(arrow_img, 0, 0);
+
+        this.p5.rotate(-angle);
+        this.p5.translate(-arrow.slot.midpoint[0], -arrow.slot.midpoint[1]);
       }
     }
 

@@ -64,7 +64,6 @@ class GameManager {
   }
 
   move_base_post(base_post) {
-    console.log(base_post);
     this.game_state.base_posts.forEach( bp => {
       if (bp.color === base_post.color) {
         bp.station.base_post = null;
@@ -95,15 +94,24 @@ class GameManager {
   }
 
   place_blocker(blocker){
-      blocker.is_preview = false;
-      blocker.slot.contains = blocker;
-      blocker.slot.blocked = true;
-      this.game_state.blockers.push(blocker);
+      let placed_blocker = 
+        new Blocker(blocker.color, null, null, null, blocker.slot, false);
+      blocker.slot.add_blocker(placed_blocker);
+      this.game_state.blockers.push(placed_blocker);
+      // Remove blocker that was set to move (previous position)
       this.game_state.blockers = this.game_state.blockers.filter( 
-        b => !b.to_move 
+        b => b.to_move === false 
       );
       this.piece_to_move.slot.contains = null;
       this.piece_to_move = null;
+  }
+
+  remove_blocker(blocker) {
+    blocker.slot.contains = null;
+    this.game_state.blockers = this.game_state.blockers.filter( 
+      b => b.to_move === false 
+    );
+    blocker.to_move = false;
   }
 
   get_game_state() {
@@ -230,11 +238,40 @@ class GameManager {
               return;
             }
       this.board.slots.forEach( slot => {
-        if (Math.abs(mouse_x - slot.midpoint[0]) < 20 && 
-            Math.abs(mouse_y - slot.midpoint[1]) < 20) {
-              if (slot.contains === null) {
+        if (slot.contains === null) {
+          if (Math.abs(mouse_x - slot.midpoint[0]) < 20 && 
+              Math.abs(mouse_y - slot.midpoint[1]) < 20) {
                 slot.preview_blocker.color = this.player_moving;
                 preview = slot.preview_blocker;                
+            }
+        } 
+      });
+      this.move_to_finalize = preview;
+    } else if (this.move_in_progress === 'opp-blocker') {
+      this.game_state.blockers.forEach( blocker => {
+        if (blocker.color !== this.player_moving && 
+            Math.abs(mouse_x - blocker.slot.midpoint[0]) < 15 && 
+            Math.abs(mouse_y - blocker.slot.midpoint[1]) < 15 ){
+              //this.piece_to_move = blocker;
+              this.move_to_finalize = blocker;
+              blocker.to_move = true;
+          } else {
+            blocker.to_move = false;
+          }
+      });
+    } else if (this.move_in_progress === 'b-arrow'||
+               this.move_in_progress === 'w-arrow') {
+      let arrow_color = this.move_in_progress === 'b-arrow' ? 'b' : 'w';
+      this.board.slots.forEach( slot => {
+
+              if (slot.contains === null) {
+                if (Math.abs(mouse_x - slot.midpoint[0]) < 20 && 
+                    Math.abs(mouse_y - slot.midpoint[1]) < 20) {
+                let from_stations = Object.keys(slot.to_points)
+                from_stations.forEach(to_point => {
+                  slot.preview_arrow.color = arrow_color;
+                  preview = slot.preview_arrow;  
+                });              
             }
         } 
       });
@@ -270,9 +307,14 @@ class GameManager {
         this.redraw();
       }
       else if (this.move_to_finalize.constructor.name === 'Blocker') {
-        this.place_blocker(this.move_to_finalize);
+        if(this.move_in_progress==='blocker-place') {
+          this.place_blocker(this.move_to_finalize);
+        } else if (this.move_in_progress==='opp-blocker') {
+          this.remove_blocker(this.move_to_finalize);
+        }
         this.move_in_progress = false;
         this.move_to_finalize = null;
+        this.piece_to_move = null;
         this.next_turn();
         this.redraw();
       }

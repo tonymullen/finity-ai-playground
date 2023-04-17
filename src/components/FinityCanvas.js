@@ -119,6 +119,7 @@ const finityCanvas = ({ app }) => {
       // defining as props yields double event firing
       cnv.mousePressed((_) => {
         gm.handle_move_click();
+        move_preview = gm.generate_move_preview(p5.mouseX, p5.mouseY);
       });
       cnv.mouseMoved((_) => {
         move_preview = gm.generate_move_preview(p5.mouseX, p5.mouseY);
