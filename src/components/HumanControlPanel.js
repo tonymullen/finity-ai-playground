@@ -20,7 +20,7 @@ const HumanControlPanel = ({ player, gm }) => {
         <option value="blocker">Move Blocker</option>
         <option value="rev-arrow">Reverse Arrow</option>
         <option value="rem-arrow">Remove Arrow</option>
-        <option value="opp-blocker">Remove Opponent's Blocker</option>
+        <option value="opp-blocker" disabled >Remove Opponent's Blocker</option>
         <option value="concede">Concede the Game</option>
       </Form.Select>
       {

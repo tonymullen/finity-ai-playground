@@ -13,9 +13,6 @@ class Arrow {
       this.from_station = from_station;
       this.to_station = to_station;
       this.slot = slot
-      if (!this.is_preview) {
-        slot.add_arrow(this);
-      }
     }
   }
 }

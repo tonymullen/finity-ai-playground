@@ -10,12 +10,16 @@ class Slot {
 
   add_blocker(blocker) {
     this.contains = blocker;
-    this.blocked = true;
   }
 
-  add_arrow(arrow) {
+  add_arrow(arrow, board) {
+    console.log(board);
     this.contains = arrow;
-    this.blocked = true;
+    this.interferes_with.forEach((slot_ind) => {
+      console.log(slot_ind);
+      console.log(board.slots[slot_ind]);
+      board.slots[slot_ind].block();
+    });
   }
 
   block() {

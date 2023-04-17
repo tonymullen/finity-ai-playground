@@ -92,7 +92,7 @@ class GameManager {
                   arrow.to_station, 
                   null,
                   arrow.slot, false);
-      arrow.slot.add_arrow(placed_arrow);
+      arrow.slot.add_arrow(placed_arrow, this.game_state.board);
       this.game_state.arrows.push(arrow);
   }
 
@@ -266,7 +266,7 @@ class GameManager {
                this.move_in_progress === 'w-arrow') {
       let arrow_color = this.move_in_progress === 'b-arrow' ? 'b' : 'w';
       this.board.slots.forEach( slot => {
-              if (slot.contains === null) {
+              if (slot.contains === null && !slot.blocked) {
                 let from_stations = Object.keys(slot.to_points)
 
                 from_stations.forEach(to_point => {

@@ -1,4 +1,5 @@
 import Station from './station';
+import { slots } from './slots';
 
 class BoardSetup {
   constructor(count) {
@@ -37,7 +38,9 @@ class BoardSetup {
       this.station_positions,
       this.station_size);
     
-    this.slots = this.set_up_slots(this.stations);
+    // this.slots = this.set_up_slots(this.stations);
+    this.set_up_slots(this.stations);
+    this.slots = slots;
   }
 
   twoPlayerSetup() {
@@ -71,7 +74,6 @@ class BoardSetup {
   }
 
   set_up_slots(stations) {
-    let slots = [];
     Object.keys(stations).forEach(from_stat_id => {
       Object.keys(stations[from_stat_id].slots).forEach(to_stat_id => {
         if (to_stat_id in stations) {
@@ -89,22 +91,21 @@ class BoardSetup {
             let run =  stations[to_stat_id].x - stations[from_stat_id].x;
             slot.rise = rise;
             slot.run = run;
+
             if (slot_pos === "c") {
               slot.midpoint = [mid_x, mid_y];
               slot.to_points[to_stat_id] = [to_point_x, to_point_y];
-            } else if (slot_pos === "r") {
+            } else if (slot_pos === "l") {
               slot.midpoint = [mid_x + distance*rise, mid_y - distance*run];
               slot.to_points[to_stat_id] = [to_point_x + distance*rise, to_point_y - distance*run];
-            } else if (slot_pos === "l") {
+            } else if (slot_pos === "r") {
               slot.midpoint = [mid_x - distance*rise, mid_y + distance*run];
               slot.to_points[to_stat_id] = [to_point_x - distance*rise, to_point_y + distance*run]
             }
-            slots.push(slot);
           });
         }
        });
     });
-    return slots;
   }
 }
 

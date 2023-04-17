@@ -40,24 +40,34 @@ class DisplayHandler {
       });
 
       // Visualize slot click areas
-      // let visualize_slots = false;
-      // if (visualize_slots) {
-      //   board.slots.forEach(slot => {
-      //     if(slot.midpoint) {
-      //       this.p5.fill(.5, 0, 0, 0.2);
-      //       this.p5.noStroke();
-      //       this.p5.circle(...slot.midpoint, 25);
-      //     }
-      //     if(slot.to_points) {
-      //       Object.keys(slot.to_points).forEach(to_station =>{
-      //         this.p5.fill(0, 0.5, 0, 0.2);
-      //         this.p5.noStroke();
-      //         this.p5.circle(...slot.to_points[to_station], 25);
-      //       })
-      //     }
-      //   });
-      // }
+      let visualize_slots = true;
+      if (visualize_slots) {
+        board.slots.forEach((slot, ind) => {
+          if(slot.midpoint) {
+            // label with number
+            if  (ind<72) {
+              this.p5.textSize(16);
+              this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
+              this.p5.fill(0,0,0,.4);
+              this.p5.text(ind, slot.midpoint[0], slot.midpoint[1]+10);
+            } 
+            // console.log(ind);
+            // this.p5.fill(.5, 0, 0, 0.2);
+            // this.p5.noStroke();
+            // this.p5.circle(...slot.midpoint, 25);
+          }
+          // if(slot.to_points) {
+          //   // Object.keys(slot.to_points).forEach(to_station =>{
+          //   //   this.p5.fill(0, 0.5, 0, 0.2);
+          //   //   this.p5.noStroke();
+          //   //   this.p5.circle(...slot.to_points[to_station], 25);
+          //   })
+          // }
+        });
+      }
   
+      
+
       [...path_pattern].reverse().forEach((cone, ind) => {
         this.p5.image(cone === 'b'  ? 
               this.imgs.ind_side_b  : 
