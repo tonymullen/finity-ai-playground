@@ -13,11 +13,8 @@ class Slot {
   }
 
   add_arrow(arrow, board) {
-    console.log(board);
     this.contains = arrow;
     this.interferes_with.forEach((slot_ind) => {
-      console.log(slot_ind);
-      console.log(board.slots[slot_ind]);
       board.slots[slot_ind].block();
     });
   }
