@@ -19,6 +19,13 @@ class Slot {
     });
   }
 
+  remove_arrow(board) {
+    this.contains = null
+    this.interferes_with.forEach((slot_ind) => {
+      board.slots[slot_ind].unblock();
+    });
+  }
+
   block() {
     this.blocked = true;
   }

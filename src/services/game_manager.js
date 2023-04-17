@@ -96,6 +96,13 @@ class GameManager {
       this.game_state.arrows.push(arrow);
   }
 
+  remove_arrow(arrow) {
+    arrow.slot.remove_arrow(this.game_state.board);
+    this.game_state.arrows = this.game_state.arrows.filter( 
+      a => a !== arrow 
+    );
+  }
+
   place_blocker(blocker){
       let placed_blocker = 
         new Blocker(blocker.color, null, null, null, blocker.slot, false);
@@ -268,21 +275,32 @@ class GameManager {
       this.board.slots.forEach( slot => {
               if (slot.contains === null && !slot.blocked) {
                 let from_stations = Object.keys(slot.to_points)
-
                 from_stations.forEach(to_point => {
-
                   if (Math.abs(mouse_x - slot.to_points[to_point][0]) < 15 && 
                     Math.abs(mouse_y - slot.to_points[to_point][1]) < 15) {
-                    // . console.log(slot.preview_arrows)
-                    // slot.preview_arrow.to_station = to_point;
-                    // slot.preview_arrow.from_station = slot.stations[to_point];
-                    // slot.preview_arrow.color = arrow_color;
                     preview = slot.preview_arrows[to_point]; 
-                    preview.color = arrow_color; 
-
+                    preview.color = arrow_color;
                 }
             });
         } 
+      });
+      this.move_to_finalize = preview;
+    } else if (this.move_in_progress === 'rem-arrow') {
+      this.game_state.arrows.forEach(arrow => {
+        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < 30 && 
+              Math.abs(mouse_y - arrow.slot.midpoint[1]) < 30) {
+              preview = arrow
+          }
+      });
+      this.move_to_finalize = preview;
+    } else if (this.move_in_progress === 'rev-arrow') {
+      this.game_state.arrows.forEach(arrow => {
+        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < 20 && 
+              Math.abs(mouse_y - arrow.slot.midpoint[1]) < 20) {
+                this.piece_to_move = arrow;
+                arrow.to_move = true;
+                preview = arrow.reverse()
+          }
       });
       this.move_to_finalize = preview;
     }
@@ -305,25 +323,18 @@ class GameManager {
         if (this.move_in_progress==='b-arrow'||
             this.move_in_progress==='w-arrow') {
           this.place_arrow(this.move_to_finalize);
-          this.move_in_progress = false;
-          this.move_to_finalize = null;
-          this.next_turn();
-          this.redraw();
+        } else if (this.move_in_progress==='rem-arrow') {
+          this.remove_arrow(this.move_to_finalize);
+        } else if (this.move_in_progress==='rev-arrow') {
+          this.remove_arrow(this.piece_to_move);
+          this.place_arrow(this.move_to_finalize);
         }
       }
       else if (this.move_to_finalize.constructor.name === 'Ring') {
         this.place_ring(null, null, null, this.move_to_finalize);
-        this.move_in_progress = false;
-        this.move_to_finalize = null;
-        this.next_turn();
-        this.redraw();
       }
       else if (this.move_to_finalize.constructor.name === 'BasePost') {
         this.move_base_post(this.move_to_finalize);
-        this.move_in_progress = false;
-        this.move_to_finalize = null;
-        this.next_turn();
-        this.redraw();
       }
       else if (this.move_to_finalize.constructor.name === 'Blocker') {
         if (this.move_in_progress==='blocker-place') {
@@ -331,12 +342,12 @@ class GameManager {
         } else if (this.move_in_progress==='opp-blocker') {
           this.remove_blocker(this.move_to_finalize);
         }
-        this.move_in_progress = false;
-        this.move_to_finalize = null;
-        this.piece_to_move = null;
-        this.next_turn();
-        this.redraw();
       }
+      this.move_in_progress = false;
+      this.move_to_finalize = null;
+      this.piece_to_move = null;
+      this.next_turn();
+      this.redraw();
     } else if (this.move_in_progress === 'blocker') {
       this.move_in_progress = 'blocker-place';
     }

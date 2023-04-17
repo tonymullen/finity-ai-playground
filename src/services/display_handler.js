@@ -40,7 +40,7 @@ class DisplayHandler {
       });
 
       // Visualize slot click areas
-      let visualize_slots = true;
+      let visualize_slots = false;
       if (visualize_slots) {
         board.slots.forEach((slot, ind) => {
           if(slot.midpoint) {

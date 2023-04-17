@@ -15,6 +15,13 @@ class Arrow {
       this.slot = slot
     }
   }
+
+  reverse() {
+    let rev_arrow = new Arrow(this.color, 
+                              this.to_station, this.from_station, 
+                              null, this.slot);
+    return rev_arrow;
+  }
 }
 
 // Set up previews
