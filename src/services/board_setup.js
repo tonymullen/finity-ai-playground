@@ -108,5 +108,4 @@ class BoardSetup {
   }
 }
 
-
 export default BoardSetup;

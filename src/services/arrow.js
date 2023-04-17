@@ -10,8 +10,8 @@ class Arrow {
       this.slot = station_slots[from_station.number][to_station.number][slot_loc];
       station_slots[from_station.number][to_station.number][slot_loc].add_arrow(this);
     } else {
-      this.from_station = Object.keys(slot.stations)[0];
-      this.to_station = Object.keys(slot.stations)[1];
+      this.from_station = from_station;
+      this.to_station = to_station;
       this.slot = slot
       if (!this.is_preview) {
         slot.add_arrow(this);
@@ -22,7 +22,10 @@ class Arrow {
 
 // Set up previews
 slots.forEach((slot) => {
-  slot.preview_arrow = new Arrow(null, null, null, null, slot, true);
+  slot.preview_arrows = {};
+  Object.keys(slot.stations).forEach((stat) => {
+    slot.preview_arrows[stat] = new Arrow(null, stat, slot.stations[stat], null, slot, true);
+  });
 });
 
 export default Arrow;

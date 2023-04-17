@@ -84,12 +84,15 @@ class GameManager {
     this.board.stations[station_id].rings.push(ring);
   }
 
-  place_arrow(color, start_stat, dest_stat, slot){
-      // 'b', "-1,0", "-1,1", "l"
-      let start = this.board.stations[start_stat];
-      let dest = this.board.stations[dest_stat];
-
-      let arrow = new Arrow(color, start, dest, slot);
+  // place_arrow(color, start_stat, dest_stat, slot){
+  place_arrow(arrow){
+      let placed_arrow = 
+        new Arrow(arrow.color, 
+                  arrow.from_station,
+                  arrow.to_station, 
+                  null,
+                  arrow.slot, false);
+      arrow.slot.add_arrow(placed_arrow);
       this.game_state.arrows.push(arrow);
   }
 
@@ -263,16 +266,22 @@ class GameManager {
                this.move_in_progress === 'w-arrow') {
       let arrow_color = this.move_in_progress === 'b-arrow' ? 'b' : 'w';
       this.board.slots.forEach( slot => {
-
               if (slot.contains === null) {
-                if (Math.abs(mouse_x - slot.midpoint[0]) < 20 && 
-                    Math.abs(mouse_y - slot.midpoint[1]) < 20) {
                 let from_stations = Object.keys(slot.to_points)
+
                 from_stations.forEach(to_point => {
-                  slot.preview_arrow.color = arrow_color;
-                  preview = slot.preview_arrow;  
-                });              
-            }
+
+                  if (Math.abs(mouse_x - slot.to_points[to_point][0]) < 15 && 
+                    Math.abs(mouse_y - slot.to_points[to_point][1]) < 15) {
+                    // . console.log(slot.preview_arrows)
+                    // slot.preview_arrow.to_station = to_point;
+                    // slot.preview_arrow.from_station = slot.stations[to_point];
+                    // slot.preview_arrow.color = arrow_color;
+                    preview = slot.preview_arrows[to_point]; 
+                    preview.color = arrow_color; 
+
+                }
+            });
         } 
       });
       this.move_to_finalize = preview;
@@ -292,7 +301,17 @@ class GameManager {
 
   handle_move_click() {
     if (this.move_to_finalize) {
-      if (this.move_to_finalize.constructor.name === 'Ring') {
+      if (this.move_to_finalize.constructor.name === 'Arrow') {
+        if (this.move_in_progress==='b-arrow'||
+            this.move_in_progress==='w-arrow') {
+          this.place_arrow(this.move_to_finalize);
+          this.move_in_progress = false;
+          this.move_to_finalize = null;
+          this.next_turn();
+          this.redraw();
+        }
+      }
+      else if (this.move_to_finalize.constructor.name === 'Ring') {
         this.place_ring(null, null, null, this.move_to_finalize);
         this.move_in_progress = false;
         this.move_to_finalize = null;
@@ -307,7 +326,7 @@ class GameManager {
         this.redraw();
       }
       else if (this.move_to_finalize.constructor.name === 'Blocker') {
-        if(this.move_in_progress==='blocker-place') {
+        if (this.move_in_progress==='blocker-place') {
           this.place_blocker(this.move_to_finalize);
         } else if (this.move_in_progress==='opp-blocker') {
           this.remove_blocker(this.move_to_finalize);
