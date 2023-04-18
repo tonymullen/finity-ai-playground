@@ -126,8 +126,8 @@ class DisplayHandler {
       let arrow_img = arrow.color === 'b' ? this.imgs.ab : this.imgs.aw;
       arrow_img.resize(90, 90);
 
-      let rise = board.stations[arrow.from_station].y - board.stations[arrow.to_station].y;
-      let run = board.stations[arrow.from_station].x - board.stations[arrow.to_station].x;
+      let rise = board.stations[arrow.to_station].y - board.stations[arrow.from_station].y;
+      let run = board.stations[arrow.to_station].x - board.stations[arrow.from_station].x;
     
       let angle = this.rotations[this.angle_label(rise, run)];
 
@@ -207,8 +207,8 @@ class DisplayHandler {
         let arrow_img = arrow.color === 'b' ? this.imgs.ab_prev : this.imgs.aw_prev;
         arrow_img.resize(90, 90);
 
-        let rise = board.stations[arrow.from_station].y - board.stations[arrow.to_station].y;
-        let run = board.stations[arrow.from_station].x - board.stations[arrow.to_station].x;
+        let rise = board.stations[arrow.to_station].y - board.stations[arrow.from_station].y;
+        let run = board.stations[arrow.to_station].x - board.stations[arrow.from_station].x;
       
         let angle = this.rotations[this.angle_label(rise, run)];
   

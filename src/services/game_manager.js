@@ -83,7 +83,7 @@ class GameManager {
         new Arrow(arrow.color, 
                   arrow.from_station,
                   arrow.to_station, 
-                  null,
+                  // null,
                   arrow.slot, false);
       arrow.slot.add_arrow(placed_arrow, this.game_state.board);
       this.game_state.arrows.push(arrow);
@@ -96,12 +96,40 @@ class GameManager {
     );
   }
 
+  occupies_high_point(color, arrow) {
+    if (this.board.stations[arrow.to_station].base_post === color) {
+      return true;
+    } else if (
+      this.board.stations[arrow.to_station].base_post === null &&
+      this.board.stations[arrow.to_station].rings.length > 0 && 
+      this.board.stations[arrow.to_station].rings[0].color === color) {
+        return true
+    } else if (
+      this.board.stations[arrow.to_station].base_post === null &&
+      this.board.stations[arrow.to_station].rings.length > 1 && 
+      this.board.stations[arrow.to_station].rings[0] === null &&
+      this.board.stations[arrow.to_station].rings[1].color === color
+    ) {
+      return true
+    } else if (
+      this.board.stations[arrow.to_station].base_post === null &&
+      this.board.stations[arrow.to_station].rings.length > 2 && 
+      this.board.stations[arrow.to_station].rings[0] === null &&
+      this.board.stations[arrow.to_station].rings[1] === null &&
+      this.board.stations[arrow.to_station].rings[2].color === color
+    ) {
+      return true
+    } else {
+      return false
+    }
+  }
+
   not_redundant(slot, to_point, color) {
     let not_redundant = true;
     slot.neighbors.forEach(ind => {
       if (this.game_state.board.slots[ind].contains &&
          this.game_state.board.slots[ind].contains.to_station &&
-         this.game_state.board.slots[ind].contains.from_station === to_point &&
+         this.game_state.board.slots[ind].contains.to_station === to_point &&
          this.game_state.board.slots[ind].contains.color === color) {
           not_redundant = false;
          }
@@ -298,17 +326,19 @@ class GameManager {
       this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'rem-arrow') {
       this.game_state.arrows.forEach(arrow => {
-        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < 30 && 
-              Math.abs(mouse_y - arrow.slot.midpoint[1]) < 30) {
-              preview = arrow
+        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < 15 && 
+              Math.abs(mouse_y - arrow.slot.midpoint[1]) < 15) {
+                if (this.occupies_high_point(this.player_moving, arrow)) {
+                  preview = arrow
+                }
           }
       });
       this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'rev-arrow') {
       this.game_state.arrows.forEach(arrow => {
-        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < 20 && 
-              Math.abs(mouse_y - arrow.slot.midpoint[1]) < 20) {
-                if (this.not_redundant(arrow.slot, arrow.to_station, arrow.color)) {
+        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < 15 && 
+              Math.abs(mouse_y - arrow.slot.midpoint[1]) < 15) {
+                if (this.not_redundant(arrow.slot, arrow.from_station, arrow.color)) {
                   this.piece_to_move = arrow;
                   arrow.to_move = true;
                   preview = arrow.reverse()
