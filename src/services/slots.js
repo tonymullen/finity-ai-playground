@@ -44,42 +44,7 @@ const slots = Array.from({length: 72},
     () => new Slot()
   );
 
-
-slots[0].interferes_with = [17, 18];
-slots[2].interferes_with = [3, 27];
-slots[3].interferes_with = [2, 27];
-slots[5].interferes_with = [6, 36];
-slots[6].interferes_with = [5, 36];
-slots[8].interferes_with = [9, 45];
-slots[9].interferes_with = [8, 45];
-slots[11].interferes_with = [12, 54];
-slots[12].interferes_with = [11, 54];
-slots[14].interferes_with = [15, 63];
-slots[15].interferes_with = [14, 63];
-slots[17].interferes_with = [18, 0];
-slots[18].interferes_with = [17, 0];
-slots[20].interferes_with = [21, 71];
-slots[21].interferes_with = [20, 71];
-slots[26].interferes_with = [29, 30];
-slots[27].interferes_with = [2, 3];
-slots[29].interferes_with = [26, 30];
-slots[30].interferes_with = [26, 29];
-slots[35].interferes_with = [38, 39];
-slots[36].interferes_with = [5, 6];
-slots[38].interferes_with = [35, 39];
-slots[44].interferes_with = [47, 48];
-slots[45].interferes_with = [8, 9];
-slots[47].interferes_with = [44, 48];
-slots[48].interferes_with = [44, 47];
-slots[53].interferes_with = [56, 57];
-slots[54].interferes_with = [11, 12];
-slots[56].interferes_with = [53, 57];
-slots[57].interferes_with = [53, 56];
-slots[62].interferes_with = [65, 66];
-slots[63].interferes_with = [14, 15];
-slots[65].interferes_with = [62, 66];
-slots[66].interferes_with = [62, 65];
-slots[71].interferes_with = [20, 21];
+set_up_slot_relations();
 
 slots.forEach((slot, index) => {
   slot.id = index;
@@ -372,5 +337,119 @@ station_numbers.forEach((from_station) => {
     }
   });
 }); 
+
+function set_up_slot_relations() {
+  {
+    slots[0].interferes_with = [17, 18];
+    slots[2].interferes_with = [3, 27];
+    slots[3].interferes_with = [2, 27];
+    slots[5].interferes_with = [6, 36];
+    slots[6].interferes_with = [5, 36];
+    slots[8].interferes_with = [9, 45];
+    slots[9].interferes_with = [8, 45];
+    slots[11].interferes_with = [12, 54];
+    slots[12].interferes_with = [11, 54];
+    slots[14].interferes_with = [15, 63];
+    slots[15].interferes_with = [14, 63];
+    slots[17].interferes_with = [18, 0];
+    slots[18].interferes_with = [17, 0];
+    slots[20].interferes_with = [21, 71];
+    slots[21].interferes_with = [20, 71];
+    slots[26].interferes_with = [29, 30];
+    slots[27].interferes_with = [2, 3];
+    slots[29].interferes_with = [26, 30];
+    slots[30].interferes_with = [26, 29];
+    slots[35].interferes_with = [38, 39];
+    slots[36].interferes_with = [5, 6];
+    slots[38].interferes_with = [35, 39];
+    slots[44].interferes_with = [47, 48];
+    slots[45].interferes_with = [8, 9];
+    slots[47].interferes_with = [44, 48];
+    slots[48].interferes_with = [44, 47];
+    slots[53].interferes_with = [56, 57];
+    slots[54].interferes_with = [11, 12];
+    slots[56].interferes_with = [53, 57];
+    slots[57].interferes_with = [53, 56];
+    slots[62].interferes_with = [65, 66];
+    slots[63].interferes_with = [14, 15];
+    slots[65].interferes_with = [62, 66];
+    slots[66].interferes_with = [62, 65];
+    slots[71].interferes_with = [20, 21];
+  }
+  {
+    slots[0].neighbors = [1, 2];
+    slots[1].neighbors = [0, 2];
+    slots[2].neighbors = [0, 1];
+    slots[3].neighbors = [4, 5];
+    slots[4].neighbors = [3, 5];
+    slots[5].neighbors = [3, 4];
+    slots[6].neighbors = [7, 8];
+    slots[7].neighbors = [6, 8];
+    slots[8].neighbors = [6, 7];
+    slots[9].neighbors = [10, 11];
+    slots[10].neighbors = [9, 11];
+    slots[11].neighbors = [9, 10];
+    slots[12].neighbors = [13, 14];
+    slots[13].neighbors = [12, 14];
+    slots[14].neighbors = [12, 13];
+    slots[15].neighbors = [16, 17];
+    slots[16].neighbors = [15, 17];
+    slots[17].neighbors = [15, 16];
+    slots[18].neighbors = [19, 20];
+    slots[19].neighbors = [18, 29];
+    slots[20].neighbors = [18, 19];
+    slots[21].neighbors = [22, 23];
+    slots[22].neighbors = [21, 23];
+    slots[23].neighbors = [21, 22];
+    slots[24].neighbors = [25, 26];
+    slots[25].neighbors = [24, 26];
+    slots[26].neighbors = [24, 25];
+    slots[27].neighbors = [28, 29];
+    slots[28].neighbors = [27, 29];
+    slots[29].neighbors = [27, 28];
+    slots[30].neighbors = [31, 32];
+    slots[31].neighbors = [30, 32];
+    slots[32].neighbors = [30, 31];
+    slots[33].neighbors = [34, 35];
+    slots[34].neighbors = [33, 35];
+    slots[35].neighbors = [33, 34];
+    slots[36].neighbors = [37, 38];
+    slots[37].neighbors = [36, 36];
+    slots[38].neighbors = [36, 37];
+    slots[39].neighbors = [40, 41];
+    slots[40].neighbors = [39, 41];
+    slots[41].neighbors = [39, 40];
+    slots[42].neighbors = [43, 44];
+    slots[43].neighbors = [42, 44];
+    slots[44].neighbors = [42, 43];
+    slots[45].neighbors = [46, 47];
+    slots[46].neighbors = [45, 47];
+    slots[47].neighbors = [45, 46];
+    slots[48].neighbors = [49, 50];
+    slots[49].neighbors = [48, 50];
+    slots[50].neighbors = [48, 49];
+    slots[51].neighbors = [52, 53];
+    slots[52].neighbors = [52, 53];
+    slots[53].neighbors = [51, 52];
+    slots[54].neighbors = [55, 56];
+    slots[55].neighbors = [54, 56];
+    slots[56].neighbors = [54, 55];
+    slots[57].neighbors = [58, 59];
+    slots[58].neighbors = [57, 59];
+    slots[59].neighbors = [57, 58];
+    slots[60].neighbors = [61, 62];
+    slots[61].neighbors = [60, 62];
+    slots[62].neighbors = [60, 61];
+    slots[63].neighbors = [64, 65];
+    slots[64].neighbors = [63, 65];
+    slots[65].neighbors = [63, 64];
+    slots[66].neighbors = [67, 68];
+    slots[67].neighbors = [66, 68];
+    slots[68].neighbors = [66, 67];
+    slots[69].neighbors = [70, 71];
+    slots[70].neighbors = [69, 71];
+    slots[71].neighbors = [69, 70];
+  }
+}
 
 export { slots, station_slots }
