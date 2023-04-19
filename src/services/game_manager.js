@@ -3,6 +3,7 @@ import Arrow from './arrow';
 import Blocker from './blocker';
 import Ring from './ring';
 import Board from './board';
+import { pathAnalyzer } from './path_analyzer.js';
 
 
 class GameManager {
@@ -268,16 +269,21 @@ class GameManager {
       });
       this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'blocker') {
+      let mouse_off = true;
       this.game_state.blockers.forEach( blocker => {
         if (Math.abs(mouse_x - blocker.slot.midpoint[0]) < 15 && 
             Math.abs(mouse_y - blocker.slot.midpoint[1]) < 15 && 
             blocker.color === this.player_moving){
+              mouse_off = false;
               this.piece_to_move = blocker;
               blocker.to_move = true;
           } else {
             blocker.to_move = false;
           }
       });
+      if (mouse_off) {
+        this.piece_to_move = null;
+      }
     } else if (this.move_in_progress === 'blocker-place') {
       // cancel move if mouse is outside of board
       if (mouse_x < move_cancel_x_range[0] || mouse_x > move_cancel_x_range[1] ||
@@ -291,7 +297,7 @@ class GameManager {
               Math.abs(mouse_y - slot.midpoint[1]) < 20) {
                 slot.preview_blocker.color = this.player_moving;
                 preview = slot.preview_blocker;                
-            }
+            } 
         } 
       });
       this.move_to_finalize = preview;
@@ -353,7 +359,10 @@ class GameManager {
 
   can_place_ring(station, color) {
     return ((station.rings.length < 3) && 
-            (station.base_post !== color))
+            (station.base_post !== color) &&
+            pathAnalyzer.reachable_stations(
+              color, this.board, this.game_state
+            ).has(station.number));
   }
 
   can_move_base_post(station, color) {
@@ -392,12 +401,18 @@ class GameManager {
       this.next_turn();
       this.redraw();
     } else if (this.move_in_progress === 'blocker') {
-      this.move_in_progress = 'blocker-place';
+      if (this.piece_to_move) {
+        this.move_in_progress = 'blocker-place';
+      }
     }
   }
 
   next_turn() {
     this.turn_index = (this.turn_index + 1) % this.player_count();
+
+    // Just for testing
+    let color = this.is_turn();
+    pathAnalyzer.reachable_stations(color, this.board, this.game_state);
   }
 
   is_turn() {
