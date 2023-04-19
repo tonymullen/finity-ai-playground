@@ -7,7 +7,7 @@ class Station {
     this.x = pos[0];
     this.y = pos[1];
     this.size = size;
-    this.rings = [];
+    this.rings = [null, null, null];
     this.base_post = null;
     this.slots = station_slots[this.number];
   }

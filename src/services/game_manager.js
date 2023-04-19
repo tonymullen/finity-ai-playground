@@ -5,7 +5,9 @@ import Ring from './ring';
 import Board from './board';
 import { pathAnalyzer } from './path_analyzer.js';
 
-
+/**
+ * Game manager class
+ */
 class GameManager {
   constructor(app) {
     this.app = app;
@@ -37,14 +39,32 @@ class GameManager {
     this.move_to_finalize = null;
     this.piece_to_move = null;
     this.needs_redraw = true;
+    this.winners = [];
   }
 
+  /* 
+  * Setup
+  */
+
+  /**
+   * Sets App attribute for game manager
+   * @param {App} app 
+   */
   set_app(app) {
     this.app = app;
   }
 
-  color_is_playing(color) {
-      return this.players[color];
+  /**
+   * Reset the board for a particular number of players
+   * @param {Number} num 
+   */
+  reset_board(num) {
+    if (num !== this.board.num_players) {
+      this.board.setup_board(num);
+      this.game_state.base_posts = this.set_up_base_posts();
+      this.game_state.blockers = this.set_up_blockers();
+      this.redraw();
+    }
   }
 
   toggle_player(color) {
@@ -64,109 +84,6 @@ class GameManager {
     return Object.keys(this.players).filter( p => this.players[p]);
   }
 
-  move_base_post(base_post) {
-    this.game_state.base_posts.forEach( bp => {
-      if (bp.color === base_post.color) {
-        bp.station.base_post = null;
-        bp.station = base_post.station;
-      }
-    });
-  }
-
-  place_ring(ring) {
-    let station_id = ring.station.number;
-    this.game_state.rings.push(ring);
-    this.board.stations[station_id].rings.push(ring);
-  }
-
-  place_arrow(arrow){
-      let placed_arrow = 
-        new Arrow(arrow.color, 
-                  arrow.from_station,
-                  arrow.to_station, 
-                  // null,
-                  arrow.slot, false);
-      arrow.slot.add_arrow(placed_arrow, this.game_state.board);
-      this.game_state.arrows.push(arrow);
-  }
-
-  remove_arrow(arrow) {
-    arrow.slot.remove_arrow(this.game_state.board);
-    this.game_state.arrows = this.game_state.arrows.filter( 
-      a => a !== arrow 
-    );
-  }
-
-  occupies_high_point(color, arrow) {
-    if (this.board.stations[arrow.to_station].base_post === color) {
-      return true;
-    } else if (
-      this.board.stations[arrow.to_station].base_post === null &&
-      this.board.stations[arrow.to_station].rings.length > 0 && 
-      this.board.stations[arrow.to_station].rings[0].color === color) {
-        return true
-    } else if (
-      this.board.stations[arrow.to_station].base_post === null &&
-      this.board.stations[arrow.to_station].rings.length > 1 && 
-      this.board.stations[arrow.to_station].rings[0] === null &&
-      this.board.stations[arrow.to_station].rings[1].color === color
-    ) {
-      return true
-    } else if (
-      this.board.stations[arrow.to_station].base_post === null &&
-      this.board.stations[arrow.to_station].rings.length > 2 && 
-      this.board.stations[arrow.to_station].rings[0] === null &&
-      this.board.stations[arrow.to_station].rings[1] === null &&
-      this.board.stations[arrow.to_station].rings[2].color === color
-    ) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  not_redundant(slot, to_point, color) {
-    let not_redundant = true;
-    slot.neighbors.forEach(ind => {
-      if (this.game_state.board.slots[ind].contains &&
-         this.game_state.board.slots[ind].contains.to_station &&
-         this.game_state.board.slots[ind].contains.to_station === to_point &&
-         this.game_state.board.slots[ind].contains.color === color) {
-          not_redundant = false;
-         }
-    });
-    return not_redundant;
-  }
-
-  place_blocker(blocker){
-      let placed_blocker = 
-        new Blocker(blocker.color, null, null, null, blocker.slot, false);
-      blocker.slot.add_blocker(placed_blocker);
-      this.game_state.blockers.push(placed_blocker);
-      // Remove blocker that was set to move (previous position)
-      this.game_state.blockers = this.game_state.blockers.filter( 
-        b => b.to_move === false 
-      );
-      this.piece_to_move.slot.contains = null;
-      this.piece_to_move = null;
-  }
-
-  remove_blocker(blocker) {
-    blocker.slot.contains = null;
-    this.game_state.blockers = this.game_state.blockers.filter( 
-      b => b.to_move === false 
-    );
-    blocker.to_move = false;
-  }
-
-  get_game_state() {
-    return this.game_state;
-  }
-
-  set_needs_redraw(bool) {
-    this.needs_redraw = bool;
-  }
-
   set_player_agent(color, agent) {
     this.player_agents[color] = agent;
     this.redraw();
@@ -175,12 +92,13 @@ class GameManager {
   set_up_base_posts() {
     let base_posts = [];
     this.player_colors().forEach( (color, ind) => {
-      base_posts.push(new BasePost(color, this.board.stations[
+      let bp = new BasePost(color, this.board.stations[
         this.board.start_stations[ind]
-      ]));
+      ])
+      base_posts.push(bp);
       this.board.stations[
         this.board.start_stations[ind]
-      ].base_post = color;
+      ].base_post = bp;
     });
     return base_posts;
   }
@@ -204,13 +122,28 @@ class GameManager {
     return blockers;
   }
 
-  reset_board(num) {
-    if (num !== this.board.num_players) {
-      this.board.setup_board(num);
-      this.game_state.base_posts = this.set_up_base_posts();
-      this.game_state.blockers = this.set_up_blockers();
-      this.redraw();
-    }
+  generate_path_pattern() {
+    const colors = ['b', 'w'];
+    let pattern = Array.from({length: 8}, () => colors[Math.round(Math.random())]);
+    while (pattern.filter( (color) => color === 'b').length < 2 ||
+        pattern.filter( (color) => color === 'w').length < 2) {
+          // bad pattern, try again
+          pattern = Array.from({length: 8}, () => colors[Math.round(Math.random())]);
+        }
+    return pattern;
+  } 
+
+  // Turn management
+  color_is_playing(color) {
+    return this.players[color];
+  }
+
+  next_turn() {
+    this.turn_index = (this.turn_index + 1) % this.player_count();
+  }
+
+  is_turn() {
+    return this.player_colors()[this.turn_index];
   }
 
   start_move(player, move_type) {
@@ -226,6 +159,120 @@ class GameManager {
     this.piece_to_move.to_move = false;
     this.piece_to_move = null;
     this.redraw();
+  }
+
+  // Moves
+  move_base_post(base_post) {
+    this.game_state.base_posts.forEach( bp => {
+      if (bp.color === base_post.color) {
+        bp.station.base_post = null;
+        base_post.station.base_post = base_post;
+        bp.station = base_post.station;
+      }
+    });
+  }
+
+  place_ring(ring) {
+    let station_id = ring.station.number;
+    this.game_state.rings.push(ring);
+    if (ring.size === 's') {
+      this.board.stations[station_id].rings[0] = ring;
+    } else if (ring.size === 'm') {
+      this.board.stations[station_id].rings[1] = ring;
+    } else if (ring.size === 'l') {
+      this.board.stations[station_id].rings[2] = ring;
+    }
+  }
+
+  remove_ring(ring) {
+    let station_id = ring.station.number;
+    this.game_state.rings = this.game_state.rings.filter(r => r !== ring);
+    this.board.stations[station_id].rings = this.board.stations[station_id].rings.map(
+      r => {
+        if(r === ring) {
+          return null;
+        } else {
+          return r;
+        }
+      }
+    )
+  }
+
+  place_arrow(arrow){
+      let placed_arrow = 
+        new Arrow(arrow.color, 
+                  arrow.from_station,
+                  arrow.to_station, 
+                  arrow.slot, false);
+      arrow.slot.add_arrow(placed_arrow, this.game_state.board);
+      this.game_state.arrows.push(arrow);
+  }
+
+  remove_arrow(arrow) {
+    arrow.slot.remove_arrow(this.game_state.board);
+    this.game_state.arrows = this.game_state.arrows.filter( 
+      a => a !== arrow 
+    );
+    this.reevaluate_ring_support();
+  }
+
+  place_blocker(blocker){
+    let placed_blocker = 
+      new Blocker(blocker.color, null, null, null, blocker.slot, false);
+    blocker.slot.add_blocker(placed_blocker);
+    this.game_state.blockers.push(placed_blocker);
+    // Remove blocker that was set to move (previous position)
+    this.game_state.blockers = this.game_state.blockers.filter( 
+      b => b.to_move === false 
+    );
+    this.piece_to_move.slot.contains = null;
+    this.piece_to_move = null;
+  }
+
+  remove_blocker(blocker) {
+    blocker.slot.contains = null;
+    this.game_state.blockers = this.game_state.blockers.filter( 
+      b => b.to_move === false 
+    );
+    blocker.to_move = false;
+  }
+
+  handle_move_click() {
+    if (this.move_to_finalize) {
+      if (this.move_to_finalize.constructor.name === 'Arrow') {
+        if (this.move_in_progress==='b-arrow'||
+            this.move_in_progress==='w-arrow') {
+          this.place_arrow(this.move_to_finalize);
+        } else if (this.move_in_progress==='rem-arrow') {
+          this.remove_arrow(this.move_to_finalize);
+        } else if (this.move_in_progress==='rev-arrow') {
+          this.remove_arrow(this.piece_to_move);
+          this.place_arrow(this.move_to_finalize);
+        }
+      }
+      else if (this.move_to_finalize.constructor.name === 'Ring') {
+        this.place_ring(this.move_to_finalize);
+      }
+      else if (this.move_to_finalize.constructor.name === 'BasePost') {
+        this.move_base_post(this.move_to_finalize);
+      }
+      else if (this.move_to_finalize.constructor.name === 'Blocker') {
+        if (this.move_in_progress==='blocker-place') {
+          this.place_blocker(this.move_to_finalize);
+        } else if (this.move_in_progress==='opp-blocker') {
+          this.remove_blocker(this.move_to_finalize);
+        }
+      }
+      this.move_in_progress = false;
+      this.move_to_finalize = null;
+      this.piece_to_move = null;
+      this.next_turn();
+      this.redraw();
+    } else if (this.move_in_progress === 'blocker') {
+      if (this.piece_to_move) {
+        this.move_in_progress = 'blocker-place';
+      }
+    }
   }
 
   generate_move_preview(mouse_x, mouse_y) {
@@ -244,9 +291,10 @@ class GameManager {
               if (stat_key !== '0,0') {
                 if (this.can_place_ring(station, this.player_moving)) {
                   let size = 's';
-                  if (station.rings.length === 1) {
+                  if (station.rings[0]) {
                     size = 'm';
-                  } else if (station.rings.length === 2) {
+                  }
+                  if (station.rings[1]) {
                     size = 'l';
                   }
                   preview =  new Ring(this.player_moving, size, station);  
@@ -357,78 +405,95 @@ class GameManager {
     return preview;
   }
 
+  // Move and ring conditions
+  reevaluate_ring_support() {
+    this.game_state.base_posts.forEach(bp => {
+      this.clear_orphans(bp.color);
+    })
+  }
+
+  /**
+   * 
+   * @param {NewType} color 
+   */
+  clear_orphans(color) {
+    let reachable_stations = pathAnalyzer.reachable_stations(color, this.board, this.game_state);
+    let rings = this.game_state.rings.filter(ring => ring.color === color);
+    rings.forEach(ring => {
+      if (!reachable_stations.has(ring.station.number)) {
+        this.remove_ring(ring);
+      }
+    })
+  }
+
   can_place_ring(station, color) {
-    return ((station.rings.length < 3) && 
-            (station.base_post !== color) &&
+    return ((station.rings.filter(ring => ring).length < 3) && 
+            (!station.base_post || station.base_post.color !== color) &&
             pathAnalyzer.reachable_stations(
               color, this.board, this.game_state
             ).has(station.number));
   }
 
   can_move_base_post(station, color) {
-    return (!station.base_post);
+    return (!station.base_post
+      && this.new_path_has_rings(station, color));
   }
 
-  handle_move_click() {
-    if (this.move_to_finalize) {
-      if (this.move_to_finalize.constructor.name === 'Arrow') {
-        if (this.move_in_progress==='b-arrow'||
-            this.move_in_progress==='w-arrow') {
-          this.place_arrow(this.move_to_finalize);
-        } else if (this.move_in_progress==='rem-arrow') {
-          this.remove_arrow(this.move_to_finalize);
-        } else if (this.move_in_progress==='rev-arrow') {
-          this.remove_arrow(this.piece_to_move);
-          this.place_arrow(this.move_to_finalize);
-        }
-      }
-      else if (this.move_to_finalize.constructor.name === 'Ring') {
-        this.place_ring(this.move_to_finalize);
-      }
-      else if (this.move_to_finalize.constructor.name === 'BasePost') {
-        this.move_base_post(this.move_to_finalize);
-      }
-      else if (this.move_to_finalize.constructor.name === 'Blocker') {
-        if (this.move_in_progress==='blocker-place') {
-          this.place_blocker(this.move_to_finalize);
-        } else if (this.move_in_progress==='opp-blocker') {
-          this.remove_blocker(this.move_to_finalize);
-        }
-      }
-      this.move_in_progress = false;
-      this.move_to_finalize = null;
-      this.piece_to_move = null;
-      this.next_turn();
-      this.redraw();
-    } else if (this.move_in_progress === 'blocker') {
-      if (this.piece_to_move) {
-        this.move_in_progress = 'blocker-place';
-      }
+  new_path_has_rings(station, color) {
+    return true
+  }
+
+  occupies_high_point(color, arrow) {
+    if (
+      this.board.stations[arrow.to_station].base_post &&
+      this.board.stations[arrow.to_station].base_post.color === color) {
+      return true;
+    } else if (
+      !this.board.stations[arrow.to_station].base_post &&
+      this.board.stations[arrow.to_station].rings.length > 0 && 
+      this.board.stations[arrow.to_station].rings[0].color === color) {
+        return true
+    } else if (
+      !this.board.stations[arrow.to_station].base_post &&
+      this.board.stations[arrow.to_station].rings.length > 1 && 
+      !this.board.stations[arrow.to_station].rings[0] &&
+      this.board.stations[arrow.to_station].rings[1].color === color
+    ) {
+      return true
+    } else if (
+      !this.board.stations[arrow.to_station].base_post &&
+      this.board.stations[arrow.to_station].rings.length > 2 && 
+      !this.board.stations[arrow.to_station].rings[0] &&
+      !this.board.stations[arrow.to_station].rings[1] &&
+      this.board.stations[arrow.to_station].rings[2].color === color
+    ) {
+      return true
+    } else {
+      return false
     }
   }
 
-  next_turn() {
-    this.turn_index = (this.turn_index + 1) % this.player_count();
-
-    // Just for testing
-    let color = this.is_turn();
-    pathAnalyzer.reachable_stations(color, this.board, this.game_state);
+  not_redundant(slot, to_point, color) {
+    let not_redundant = true;
+    slot.neighbors.forEach(ind => {
+      if (this.game_state.board.slots[ind].contains &&
+         this.game_state.board.slots[ind].contains.to_station &&
+         this.game_state.board.slots[ind].contains.to_station === to_point &&
+         this.game_state.board.slots[ind].contains.color === color) {
+          not_redundant = false;
+         }
+    });
+    return not_redundant;
   }
 
-  is_turn() {
-    return this.player_colors()[this.turn_index];
+  // Getters and utilities
+  get_game_state() {
+    return this.game_state;
   }
 
-  generate_path_pattern() {
-    const colors = ['b', 'w'];
-    let pattern = Array.from({length: 8}, () => colors[Math.round(Math.random())]);
-    while (pattern.filter( (color) => color === 'b').length < 2 ||
-        pattern.filter( (color) => color === 'w').length < 2) {
-          // bad pattern, try again
-          pattern = Array.from({length: 8}, () => colors[Math.round(Math.random())]);
-        }
-    return pattern;
-  } 
+  set_needs_redraw(bool) {
+    this.needs_redraw = bool;
+  }
 
   redraw() {
     this.app.setState({});

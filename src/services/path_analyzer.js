@@ -31,7 +31,7 @@ class PathAnalyzer {
             });
             Object.keys(station_visits).forEach(stat_ind => {
                 let rings_on_station = board.stations[stat_ind].rings.filter(
-                        ring => ring.color === color
+                        ring => ring && ring.color === color
                     ).length;
                 if (rings_on_station < station_visits[stat_ind]){
                     path_is_supported = false;
@@ -60,7 +60,8 @@ class PathAnalyzer {
                     });
                 }
             })
-            return this.generate_raw_paths(possible_paths, remaining_pattern.slice(1), board);
+            return this.generate_raw_paths(
+                possible_paths, remaining_pattern.slice(1), board);
         }
     }
 

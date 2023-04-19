@@ -19,7 +19,10 @@ class App extends React.Component {
       <div className="App">
         <div id="header">
           <div id="header-container">
-            <img src={require("./img/FinityLogo50trans-01.png")} alt="Finity Logo" id="finity-logo"/>
+            <a href="https://www.finitygame.com/" target="_blank">
+              <img src={require("./img/FinityLogo50trans-01.png")} 
+                  alt="Finity Logo" id="finity-logo"/>
+            </a>
           <span id="title">Finity AI Playground</span>
 
           <PlayerPicker gm={ this.gm } />
