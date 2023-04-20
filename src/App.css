@@ -186,3 +186,10 @@ canvas {
 .to-play-panel {
   display: none;
 }
+
+.medal {
+  display: block;
+  width: 65%;
+  margin: auto;
+  padding-top: 70px;
+}

@@ -22,9 +22,10 @@ class GameManager {
       board: this.board,
       path_pattern: this.generate_path_pattern(),
       arrows: [],
-      rings: [],
+      rings: this.set_up_rings(),
       blockers:  this.set_up_blockers(),
       base_posts: this.set_up_base_posts(),
+      winners: [],
     };
     // default player agent is local human
     this.player_agents = {
@@ -39,7 +40,6 @@ class GameManager {
     this.move_to_finalize = null;
     this.piece_to_move = null;
     this.needs_redraw = true;
-    this.winners = [];
   }
 
   /* 
@@ -87,6 +87,17 @@ class GameManager {
   set_player_agent(color, agent) {
     this.player_agents[color] = agent;
     this.redraw();
+  }
+
+  set_up_rings() {
+    let rings = [];
+    let center_station = this.board.stations['0,0'];
+    this.player_colors().reverse().forEach( (color, ind) => {
+      let ring = new Ring(color, 'l', center_station)
+      rings.push(ring);
+      center_station.rings.push(ring);
+    });
+    return rings;
   }
 
   set_up_base_posts() {
@@ -139,7 +150,12 @@ class GameManager {
   }
 
   next_turn() {
+    this.check_victory();
     this.turn_index = (this.turn_index + 1) % this.player_count();
+    // Play past winners in >2 player games
+    while (this.game_state.winners.includes(Object.keys(this.players)[this.turn_index])) {
+      this.turn_index = (this.turn_index + 1) % this.player_count();
+    }
   }
 
   is_turn() {
@@ -168,6 +184,7 @@ class GameManager {
         bp.station.base_post = null;
         base_post.station.base_post = base_post;
         bp.station = base_post.station;
+        this.reevaluate_ring_support();
       }
     });
   }
@@ -436,11 +453,23 @@ class GameManager {
 
   can_move_base_post(station, color) {
     return (!station.base_post
-      && this.new_path_has_rings(station, color));
+      && this.new_path_has_rings(station.number, color));
   }
 
-  new_path_has_rings(station, color) {
-    return true
+  new_path_has_rings(station_ind, color) {
+    let reachable_stations = pathAnalyzer.reachable_stations(
+      color, this.board, this.game_state, station_ind)
+    let has_remaining_rings = false;
+    reachable_stations.forEach(stat_ind => {
+      let stat_rings = this.board.stations[stat_ind].rings.filter(
+        r => r && r.color === color
+      );
+      if (stat_rings.length > 0) {
+        has_remaining_rings = true;
+        return;
+      }
+    });
+    return has_remaining_rings;
   }
 
   occupies_high_point(color, arrow) {
@@ -484,6 +513,26 @@ class GameManager {
          }
     });
     return not_redundant;
+  }
+
+  check_victory() {
+    this.player_colors().forEach(color => {
+      if (this.game_state.rings.filter(
+        ring => ring.color === color
+        ).length >= 7) {
+          if (pathAnalyzer.has_full_path(color, this.board, this.game_state)) {
+            if (!this.game_state.winners.includes(color)) {
+              this.game_state.winners.push(color);
+            }
+          }
+        }
+    });
+    // if (winners.length > 0) {
+    //   winners.forEach(winner => {
+    //     this.players[winner] = false;
+    //   })
+    // }
+    // this.game_state.winners = winners;
   }
 
   // Getters and utilities

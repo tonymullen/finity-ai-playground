@@ -1,16 +1,39 @@
 class PathAnalyzer {
+    
 
-    reachable_stations(color, board, game_state) {
-        let paths = this.legal_paths(color, board, game_state);
+    reachable_stations(color, board, game_state, station_ind) {
+        // station_ind is optional default is reachable
+        // stations from current station. If station_ind is passed,
+        // then returns reachable stations from that station
+        let paths = this.legal_paths(color, board, game_state, station_ind);
         let path_concat = [].concat(...paths);
         let unique_stations = new Set(path_concat);
         return unique_stations;
     }
 
-    legal_paths(color, board, game_state) {
-        let base_post_path = [
-            this.base_post_station(color, game_state)
-        ];
+    has_full_path(color, board, game_state) {
+        const FULL_PATH_LENGTH = 9;
+        let paths = this.legal_paths(color, board, game_state)
+                        .filter(path => path.length === FULL_PATH_LENGTH)
+                        .filter(path => path[path.length-1] === '0,0');
+        console.log(paths);
+        if (paths.length > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    legal_paths(color, board, game_state, station_ind) {
+        // station_ind is optional default is legal paths
+        // from current station. If station_ind is passed,
+        // then returns legal paths from that station
+        let base_post_path = [];
+        if (!station_ind) {
+            base_post_path.push(this.base_post_station(color, game_state));
+        } else {
+            base_post_path.push(station_ind);
+        }
         let raw_paths = this.generate_raw_paths(
             [base_post_path], game_state.path_pattern, board, game_state
             );
