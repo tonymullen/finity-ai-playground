@@ -49,24 +49,11 @@ class DisplayHandler {
               this.p5.textSize(16);
               this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
               this.p5.fill(0,0,0,.4);
-              this.p5.text(ind, slot.midpoint[0], slot.midpoint[1]+10);
+              this.p5.text(ind, slot.midpoint[0], slot.midpoint[1]);
             } 
-            // console.log(ind);
-            // this.p5.fill(.5, 0, 0, 0.2);
-            // this.p5.noStroke();
-            // this.p5.circle(...slot.midpoint, 25);
           }
-          // if(slot.to_points) {
-          //   // Object.keys(slot.to_points).forEach(to_station =>{
-          //   //   this.p5.fill(0, 0.5, 0, 0.2);
-          //   //   this.p5.noStroke();
-          //   //   this.p5.circle(...slot.to_points[to_station], 25);
-          //   })
-          // }
         });
       }
-  
-      
 
       [...path_pattern].reverse().forEach((cone, ind) => {
         this.p5.image(cone === 'b'  ? 
@@ -221,16 +208,6 @@ class DisplayHandler {
         this.p5.translate(-arrow.slot.midpoint[0], -arrow.slot.midpoint[1]);
       }
     }
-
-    // slot_offset(slot) {
-    //   let slot_offset = 0;
-    //   if (slot === 'l') {
-    //     slot_offset = -30;
-    //   } else if (slot === 'r') {
-    //     slot_offset = 30;
-    //   }
-    //   return slot_offset;
-    // }
 
     angle_label(rise, run) {
       let angle_label = "";

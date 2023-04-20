@@ -40,7 +40,7 @@ const PlayerPanel = ({ player, gm }) => {
             ((<div className="no-play-panel">
               <div>
               <img src={medal_img} 
-                class="medal"/>
+                className="medal"/>
               </div></div>))
             :
             (<div className="no-play-panel"></div>)

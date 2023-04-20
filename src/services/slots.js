@@ -1,4 +1,7 @@
 class Slot {
+  /**
+   * Each of the 72 slots on the board
+   */
   constructor( ){
     this.stations = {};
     this.contains = null;
@@ -452,4 +455,7 @@ function set_up_slot_relations() {
   }
 }
 
+// slots is an array of all 72 slots
+// station_slots is a mapping of from stations, to stations,
+// l, r, c channels, and slot objects
 export { slots, station_slots }

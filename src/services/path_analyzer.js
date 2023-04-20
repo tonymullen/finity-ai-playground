@@ -16,7 +16,6 @@ class PathAnalyzer {
         let paths = this.legal_paths(color, board, game_state)
                         .filter(path => path.length === FULL_PATH_LENGTH)
                         .filter(path => path[path.length-1] === '0,0');
-        console.log(paths);
         if (paths.length > 0) {
             return true;
         } else {

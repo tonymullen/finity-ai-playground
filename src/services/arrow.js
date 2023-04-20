@@ -1,4 +1,4 @@
-import { slots, station_slots } from './slots';
+import { slots } from './slots';
 
 class Arrow {
   constructor(color, from_station, to_station, slot, is_preview) {

@@ -11,22 +11,9 @@ import { pathAnalyzer } from './path_analyzer.js';
 class GameManager {
   constructor(app) {
     this.app = app;
-    this.board = new Board(this);
-    this.players = {
-      'cyan': true,
-      'yellow': true,
-      'purple': true,
-      'red': true
-    };
-    this.game_state = {
-      board: this.board,
-      path_pattern: this.generate_path_pattern(),
-      arrows: [],
-      rings: this.set_up_rings(),
-      blockers:  this.set_up_blockers(),
-      base_posts: this.set_up_base_posts(),
-      winners: [],
-    };
+    this.players = this.get_players();
+    this.board = new Board(this.player_count());
+    this.reset_game_state();
     // default player agent is local human
     this.player_agents = {
       'cyan': 'human-loc',
@@ -54,6 +41,19 @@ class GameManager {
     this.app = app;
   }
 
+  get_players() {
+    let storedPlayers = window.localStorage.getItem("players");
+    if (storedPlayers) {
+      return JSON.parse(storedPlayers);
+    } else {
+      return ({
+          'cyan': true,
+          'yellow': true,
+          'purple': true,
+          'red': true
+        })
+    }
+  }
   /**
    * Reset the board for a particular number of players
    * @param {Number} num 
@@ -61,16 +61,39 @@ class GameManager {
   reset_board(num) {
     if (num !== this.board.num_players) {
       this.board.setup_board(num);
-      this.game_state.base_posts = this.set_up_base_posts();
-      this.game_state.blockers = this.set_up_blockers();
+      this.reset_game_state();
+      this.turn_index = 0;
+      this.player_moving = null;
+      this.move_in_progress = null;
+      this.move_to_finalize = null;
+      this.piece_to_move = null;
+      this.needs_redraw = true;
       this.redraw();
     }
+  }
+
+  /**
+   * Reset the game state
+   */
+  reset_game_state() {    
+    this.game_state = {
+      board: this.board,
+      path_pattern: this.generate_path_pattern(),
+      arrows: [],
+      rings: this.set_up_rings(),
+      blockers:  this.set_up_blockers(),
+      base_posts: this.set_up_base_posts(),
+      winners: [],
+      play_status: null
+    };
   }
 
   toggle_player(color) {
     // Ensure that there are at least 2 players
     if (!this.players[color] || this.player_count()  > 2) {
       this.players[color] = !this.players[color];
+      
+      window.localStorage.setItem("players", JSON.stringify(this.players));
       this.reset_board(this.player_count());
       this.redraw();
     }
@@ -151,18 +174,29 @@ class GameManager {
 
   next_turn() {
     this.check_victory();
-    this.turn_index = (this.turn_index + 1) % this.player_count();
-    // Play past winners in >2 player games
-    while (this.game_state.winners.includes(Object.keys(this.players)[this.turn_index])) {
+    if (this.game_state.play_status === 'over') {
+      this.turn_index = -1;
+    } else {
       this.turn_index = (this.turn_index + 1) % this.player_count();
+      // Play past winners in >2 player games
+      while (this.game_state.winners.includes(Object.keys(this.players)[this.turn_index])) {
+        this.turn_index = (this.turn_index + 1) % this.player_count();
+      }
     }
   }
 
   is_turn() {
-    return this.player_colors()[this.turn_index];
+    if (this.turn_index >= 0) {
+      return this.player_colors()[this.turn_index];
+    } else {
+      return null;
+    }
   }
 
   start_move(player, move_type) {
+    if (!this.game_state.play_status) {
+      this.game_state.play_status = 'playing';
+    }
     this.player_moving = player;
     this.move_in_progress = move_type;
     this.redraw();
@@ -357,7 +391,8 @@ class GameManager {
               return;
             }
       this.board.slots.forEach( slot => {
-        if (slot.contains === null) {
+        // For <4 player games, some slot midpoints are undefined
+        if (slot.midpoint && slot.contains === null) {
           if (Math.abs(mouse_x - slot.midpoint[0]) < 20 && 
               Math.abs(mouse_y - slot.midpoint[1]) < 20) {
                 slot.preview_blocker.color = this.player_moving;
@@ -527,12 +562,9 @@ class GameManager {
           }
         }
     });
-    // if (winners.length > 0) {
-    //   winners.forEach(winner => {
-    //     this.players[winner] = false;
-    //   })
-    // }
-    // this.game_state.winners = winners;
+    if (this.game_state.winners.length === this.player_count()-1) {
+      this.game_state.play_status = 'over';
+    }
   }
 
   // Getters and utilities
