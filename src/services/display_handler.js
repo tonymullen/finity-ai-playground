@@ -38,19 +38,17 @@ class DisplayHandler {
       Object.keys(board.stations).forEach( stat_key => {
         this.draw_station(board.stations[stat_key]);
       });
-
+      
       // Visualize slot click areas
       let visualize_slots = false;
       if (visualize_slots) {
         board.slots.forEach((slot, ind) => {
           if(slot.midpoint) {
             // label with number
-            if  (ind<72) {
-              this.p5.textSize(16);
-              this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
-              this.p5.fill(0,0,0,.4);
-              this.p5.text(ind, slot.midpoint[0], slot.midpoint[1]);
-            } 
+            this.p5.textSize(16);
+            this.p5.textAlign(this.p5.CENTER, this.p5.CENTER);
+            this.p5.fill(0,0,0,.4);
+            this.p5.text(ind, slot.midpoint[0], slot.midpoint[1]);
           }
         });
       }
@@ -58,8 +56,16 @@ class DisplayHandler {
       [...path_pattern].reverse().forEach((cone, ind) => {
         this.p5.image(cone === 'b'  ? 
               this.imgs.ind_side_b  : 
-              this.imgs.ind_side_w, 850, 150+(ind*50), 100, 70)
-      })
+              this.imgs.ind_side_w, 850, 150+(ind*50), 100, 70);  
+            });
+
+        this.p5.image(path_pattern.slice(-1)[0] === 'b'  ? 
+              this.imgs.ind_top_b  : 
+              this.imgs.ind_top_w, 
+                board.stations['0,0'].x,
+                board.stations['0,0'].y,
+                100, 100);
+     
   
       game_state.base_posts.forEach( bp => {
         this.draw_base_post(bp);

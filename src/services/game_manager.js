@@ -1,9 +1,11 @@
-import BasePost from './base_post';
-import Arrow from './arrow';
-import Blocker from './blocker';
-import Ring from './ring';
+import BasePost from './game_pieces/base_post';
+import Arrow from './game_pieces/arrow';
+import Blocker from './game_pieces/blocker';
+import Ring from './game_pieces/ring';
 import Board from './board';
-import { pathAnalyzer } from './path_analyzer.js';
+import GameState from './game_state';
+import { pathAnalyzer } from './path_analyzer';
+import player_agents from './player_agents';
 
 /**
  * Game manager class
@@ -15,7 +17,7 @@ class GameManager {
     this.board = new Board(this.player_count());
     this.reset_game_state();
     // default player agent is local human
-    this.player_agents = {
+    this.players_to_agents = {
       'cyan': 'human-loc',
       'yellow': 'human-loc',
       'purple': 'human-loc',
@@ -34,13 +36,17 @@ class GameManager {
   */
 
   /**
-   * Sets App attribute for game manager
+   * Set App attribute for game manager
    * @param {App} app 
    */
   set_app(app) {
     this.app = app;
   }
 
+  /**
+   * Check localstorage for player configuration,
+   * otherwise set default 4 person
+   */
   get_players() {
     let storedPlayers = window.localStorage.getItem("players");
     if (storedPlayers) {
@@ -54,6 +60,7 @@ class GameManager {
         })
     }
   }
+
   /**
    * Reset the board for a particular number of players
    * @param {Number} num 
@@ -75,19 +82,25 @@ class GameManager {
   /**
    * Reset the game state
    */
-  reset_game_state() {    
-    this.game_state = {
+  reset_game_state() {   
+    this.game_state = new GameState({
       board: this.board,
       path_pattern: this.generate_path_pattern(),
-      arrows: [],
+      arrows: [], 
       rings: this.set_up_rings(),
-      blockers:  this.set_up_blockers(),
+      blockers: this.set_up_blockers(),
       base_posts: this.set_up_base_posts(),
-      winners: [],
-      play_status: null
-    };
+      winners: [], 
+      play_status: null,
+    }); 
   }
 
+  /**
+   * Toggle whether a particular color
+   * player is playing
+   * 
+   * @param {String} color 
+   */
   toggle_player(color) {
     // Ensure that there are at least 2 players
     if (!this.players[color] || this.player_count()  > 2) {
@@ -99,23 +112,40 @@ class GameManager {
     }
   }
 
+  /**
+   * Return number of players
+   * @returns {number}
+   */
   player_count() {
     return Object.values(this.players).filter( p => p).length;
   }
 
+  /**
+   * Return list of player colors
+   * @returns {String[]}
+   */
   player_colors() {
     return Object.keys(this.players).filter( p => this.players[p]);
   }
 
+  /**
+   * Set the player agent (human, AI, etc) for a color
+   * @param {String} color 
+   * @param {String} agent 
+   */
   set_player_agent(color, agent) {
-    this.player_agents[color] = agent;
+    this.players_to_agents[color] = agent;
     this.redraw();
   }
 
+  /**
+   * Set up rings on center station for initial players
+   * @returns {Ring[]}
+   */
   set_up_rings() {
     let rings = [];
     let center_station = this.board.stations['0,0'];
-    this.player_colors().reverse().forEach( (color, ind) => {
+    this.player_colors().reverse().forEach( (color) => {
       let ring = new Ring(color, 'l', center_station)
       rings.push(ring);
       center_station.rings.push(ring);
@@ -123,6 +153,10 @@ class GameManager {
     return rings;
   }
 
+  /**
+   * Set up base posts for players
+   * @returns {BasePost[]}
+   */
   set_up_base_posts() {
     let base_posts = [];
     this.player_colors().forEach( (color, ind) => {
@@ -137,6 +171,10 @@ class GameManager {
     return base_posts;
   }
 
+  /**
+   * Set up blockers for players
+   * @returns {Blocker[]}
+   */
   set_up_blockers() {
     let blockers= [];
     this.player_colors().forEach( (color, ind) => {
@@ -156,6 +194,10 @@ class GameManager {
     return blockers;
   }
 
+  /**
+   * Generate random path pattern
+   * @returns {String[]}
+   */
   generate_path_pattern() {
     const colors = ['b', 'w'];
     let pattern = Array.from({length: 8}, () => colors[Math.round(Math.random())]);
@@ -168,10 +210,19 @@ class GameManager {
   } 
 
   // Turn management
+  /**
+   * Returns whether the color is playing
+   * 
+   * @param {String} color 
+   * @returns {boolean}
+   */
   color_is_playing(color) {
     return this.players[color];
   }
 
+  /**
+   * Sets the next turn index
+   */
   next_turn() {
     this.check_victory();
     if (this.game_state.play_status === 'over') {
@@ -183,8 +234,28 @@ class GameManager {
         this.turn_index = (this.turn_index + 1) % this.player_count();
       }
     }
+    this.handle_player_move(this.players_to_agents[Object.keys(this.players)[this.turn_index]]);
   }
 
+  /**
+   * Handle player move
+   * 
+   * @param {String}
+   */
+  async handle_player_move(player_agent) {
+    let move = await player_agents[player_agent]();
+    console.log("Received move")
+    console.log(move);
+    if (move) {
+      this.finalize_move();
+    }
+  }
+
+  /**
+   * Returns current playing player
+   * 
+   * @returns {(String|null)}
+   */
   is_turn() {
     if (this.turn_index >= 0) {
       return this.player_colors()[this.turn_index];
@@ -193,6 +264,11 @@ class GameManager {
     }
   }
 
+  /**
+   * 
+   * @param {String} player 
+   * @param {String} move_type 
+   */
   start_move(player, move_type) {
     if (!this.game_state.play_status) {
       this.game_state.play_status = 'playing';
@@ -202,6 +278,20 @@ class GameManager {
     this.redraw();
   }
 
+  /**
+   * Finalize a move and go to next player
+   */
+  finalize_move() {
+    this.move_in_progress = false;
+    this.move_to_finalize = null;
+    this.piece_to_move = null;
+    this.next_turn();
+    this.redraw();
+  }
+
+  /**
+   * Cancel a move
+   */
   cancel_move() {
     this.player_moving = null;
     this.move_in_progress = null;
@@ -212,6 +302,11 @@ class GameManager {
   }
 
   // Moves
+  /**
+   * Move a base post
+   * 
+   * @param {BasePost} base_post 
+   */
   move_base_post(base_post) {
     this.game_state.base_posts.forEach( bp => {
       if (bp.color === base_post.color) {
@@ -223,6 +318,11 @@ class GameManager {
     });
   }
 
+  /**
+   * Place a ring on a station
+   * 
+   * @param {Ring} ring 
+   */
   place_ring(ring) {
     let station_id = ring.station.number;
     this.game_state.rings.push(ring);
@@ -235,6 +335,11 @@ class GameManager {
     }
   }
 
+  /**
+   * Remove a ring from the board
+   * 
+   * @param {Ring} ring 
+   */
   remove_ring(ring) {
     let station_id = ring.station.number;
     this.game_state.rings = this.game_state.rings.filter(r => r !== ring);
@@ -246,9 +351,14 @@ class GameManager {
           return r;
         }
       }
-    )
+    );
   }
 
+  /**
+   * Place an arrow on the board
+   * 
+   * @param {Arrow} arrow 
+   */
   place_arrow(arrow){
       let placed_arrow = 
         new Arrow(arrow.color, 
@@ -259,6 +369,11 @@ class GameManager {
       this.game_state.arrows.push(arrow);
   }
 
+  /**
+   * Remove an arrow from the board
+   * 
+   * @param {Arrow} arrow 
+   */
   remove_arrow(arrow) {
     arrow.slot.remove_arrow(this.game_state.board);
     this.game_state.arrows = this.game_state.arrows.filter( 
@@ -279,7 +394,12 @@ class GameManager {
     this.piece_to_move.slot.contains = null;
     this.piece_to_move = null;
   }
-
+  
+  /**
+   * Remove a blocker from the board
+   * 
+   * @param {Blocker} blocker 
+   */
   remove_blocker(blocker) {
     blocker.slot.contains = null;
     this.game_state.blockers = this.game_state.blockers.filter( 
@@ -314,11 +434,7 @@ class GameManager {
           this.remove_blocker(this.move_to_finalize);
         }
       }
-      this.move_in_progress = false;
-      this.move_to_finalize = null;
-      this.piece_to_move = null;
-      this.next_turn();
-      this.redraw();
+      this.finalize_move();
     } else if (this.move_in_progress === 'blocker') {
       if (this.piece_to_move) {
         this.move_in_progress = 'blocker-place';
@@ -326,6 +442,14 @@ class GameManager {
     }
   }
 
+  /**
+   * Generate a current move
+   * for preview
+   * 
+   * @param {number} mouse_x 
+   * @param {number} mouse_y 
+   * @returns {(Ring|BasePost|Blocker|Arrow)}
+   */
   generate_move_preview(mouse_x, mouse_y) {
     const move_cancel_x_range = [50, 750];
     const move_cancel_y_range = [1,  648];
@@ -458,6 +582,10 @@ class GameManager {
   }
 
   // Move and ring conditions
+  /**
+   * Check all players' paths for
+   * orphans
+   */
   reevaluate_ring_support() {
     this.game_state.base_posts.forEach(bp => {
       this.clear_orphans(bp.color);
@@ -465,8 +593,10 @@ class GameManager {
   }
 
   /**
+   * Clear single player (color)'s 
+   * orphan rings
    * 
-   * @param {NewType} color 
+   * @param {String} color 
    */
   clear_orphans(color) {
     let reachable_stations = pathAnalyzer.reachable_stations(color, this.board, this.game_state);
@@ -478,6 +608,14 @@ class GameManager {
     })
   }
 
+  /**
+   * Determine whether a ring can be placed
+   * on a station
+   * 
+   * @param {Station} station 
+   * @param {String} color 
+   * @returns {boolean}
+   */
   can_place_ring(station, color) {
     return ((station.rings.filter(ring => ring).length < 3) && 
             (!station.base_post || station.base_post.color !== color) &&
@@ -486,11 +624,27 @@ class GameManager {
             ).has(station.number));
   }
 
+  /**
+   * Determine whether a base post can
+   * be moved to a given station
+   * 
+   * @param {Station} station 
+   * @param {String} color 
+   * @returns {boolean}
+   */
   can_move_base_post(station, color) {
     return (!station.base_post
       && this.new_path_has_rings(station.number, color));
   }
 
+  /**
+   * Check to see if a potential new path has rings
+   * to support base post move
+   * 
+   * @param {String} station_ind 
+   * @param {String} color 
+   * @returns {boolean}
+   */
   new_path_has_rings(station_ind, color) {
     let reachable_stations = pathAnalyzer.reachable_stations(
       color, this.board, this.game_state, station_ind)
@@ -507,6 +661,14 @@ class GameManager {
     return has_remaining_rings;
   }
 
+  /**
+   * Check if a player color occupies the
+   * high point on an arrow destination station
+   * 
+   * @param {String} color 
+   * @param {Arrow} arrow 
+   * @returns {boolean}
+   */
   occupies_high_point(color, arrow) {
     if (
       this.board.stations[arrow.to_station].base_post &&
@@ -514,21 +676,21 @@ class GameManager {
       return true;
     } else if (
       !this.board.stations[arrow.to_station].base_post &&
-      this.board.stations[arrow.to_station].rings.length > 0 && 
+      this.board.stations[arrow.to_station].rings[0] && 
       this.board.stations[arrow.to_station].rings[0].color === color) {
         return true
     } else if (
       !this.board.stations[arrow.to_station].base_post &&
-      this.board.stations[arrow.to_station].rings.length > 1 && 
       !this.board.stations[arrow.to_station].rings[0] &&
+      this.board.stations[arrow.to_station].rings[1] &&
       this.board.stations[arrow.to_station].rings[1].color === color
     ) {
       return true
     } else if (
       !this.board.stations[arrow.to_station].base_post &&
-      this.board.stations[arrow.to_station].rings.length > 2 && 
       !this.board.stations[arrow.to_station].rings[0] &&
       !this.board.stations[arrow.to_station].rings[1] &&
+      this.board.stations[arrow.to_station].rings[2] &&
       this.board.stations[arrow.to_station].rings[2].color === color
     ) {
       return true

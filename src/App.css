@@ -174,6 +174,15 @@ canvas {
     height: 85%;
 }
 
+.ai-info {
+  background-color: rgba(255, 255, 255, 0.6);
+  border: white 2px solid;
+  margin: 5px;
+  padding: 5px;
+  height: 85%;
+}
+
+
 .no-play-panel {
   position: relative;
   background: rgba(0, 0, 0, 0.5);
@@ -181,6 +190,13 @@ canvas {
   width: 199px;
   top: -312px;
   left: -12px;
+
+  position: relative;
+  background: rgba(0, 0, 0, 0.5);
+  height: 255px;
+  width: 168px;
+  top: -260px;
+  left: 3px;
 }
 
 .to-play-panel {

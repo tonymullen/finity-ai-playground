@@ -1,5 +1,5 @@
-import Station from './station';
-import { slots } from './slots';
+import Station from './game_pieces/station';
+import { slots } from './game_pieces/slots';
 
 class BoardSetup {
   constructor(count) {

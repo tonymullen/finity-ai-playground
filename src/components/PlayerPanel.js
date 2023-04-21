@@ -1,5 +1,6 @@
 import Form from 'react-bootstrap/Form';
 import HumanControlPanel from './HumanControlPanel';
+import AiInfoPanel from './AiInfoPanel';
 
 const PlayerPanel = ({ player, gm }) => {
   let medal_img = null;
@@ -22,13 +23,17 @@ const PlayerPanel = ({ player, gm }) => {
         }}>
         <option value="human-loc">Local Human</option>
         <option value="human-rem">Remote Human</option>
+        <option value="ai-random">Random moves AI</option>
         <option value="ai-easy">Easy AI</option>
         <option value="ai-hard">Hard AI</option>
         <option value="ai-custom">Custom AI</option>
       </Form.Select>
-      { gm.player_agents[player] === 'human-loc' && (
+      { gm.players_to_agents[player] === 'human-loc' ? (
         <HumanControlPanel player={ player } gm = { gm } />
-      ) 
+      ) :
+      (
+        <AiInfoPanel player={ player } gm = { gm } />
+      )
       }
       {
         (gm.is_turn() === player && 
