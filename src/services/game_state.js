@@ -21,10 +21,14 @@ class GameState {
     }
 
     duplicate() {
-
+        
     }
 
     apply_move() {
+
+    }
+
+    toJSON() {
 
     }
 

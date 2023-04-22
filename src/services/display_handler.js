@@ -72,11 +72,11 @@ class DisplayHandler {
       });
   
       game_state.arrows.forEach(arrow => {
-        this.draw_arrow(arrow, game_state.board);
+        this.draw_arrow_piece(arrow, game_state.board);
       });
 
       game_state.blockers.forEach(blocker => {
-        this.draw_blocker(blocker);
+        this.draw_blocker_piece(blocker);
       });
   
       game_state.rings.forEach(ring => {
@@ -115,46 +115,22 @@ class DisplayHandler {
         ...this.color_crops[base_post.color]) 
     }
 
-    draw_arrow(arrow, board) {
+    draw_arrow_piece(arrow, board) {
       let arrow_img = arrow.color === 'b' ? this.imgs.ab : this.imgs.aw;
       arrow_img.resize(90, 90);
 
-      let rise = board.stations[arrow.to_station].y - board.stations[arrow.from_station].y;
-      let run = board.stations[arrow.to_station].x - board.stations[arrow.from_station].x;
-    
-      let angle = this.rotations[this.angle_label(rise, run)];
-
-      this.p5.translate(arrow.slot.midpoint[0], arrow.slot.midpoint[1]);
-      this.p5.rotate(angle);
-
-      this.p5.image(arrow_img, 0, 0);
-
-      this.p5.rotate(-angle);
-      this.p5.translate(-arrow.slot.midpoint[0], -arrow.slot.midpoint[1]);
+      this.draw_arrow(arrow, arrow_img, board);
     }
 
-    draw_blocker(blocker) {
+    draw_blocker_piece(blocker) {
       let blocker_img;
       if (blocker.to_move) {
         blocker_img = this.imgs.bl_prev;
       } else {
         blocker_img = this.imgs.bl;
       };
-      let rise = blocker.slot.rise;
-      let run = blocker.slot.run;
-  
-      let angle = this.rotations[this.angle_label(rise, run)];
- 
-      this.p5.translate(blocker.slot.midpoint[0], blocker.slot.midpoint[1]);
-      this.p5.rotate(angle);
 
-      this.p5.image(blocker_img, 0, 0,
-        100,
-        100,
-        ...this.color_crops[blocker.color]);
-            
-      this.p5.rotate(-angle);
-      this.p5.translate(-blocker.slot.midpoint[0], -blocker.slot.midpoint[1]);
+      this.draw_blocker(blocker, blocker_img);
     }
 
     draw_move_preview(move, board) {
@@ -179,40 +155,48 @@ class DisplayHandler {
       } else if (move.constructor.name === 'Blocker') {
         let blocker = move;
         let blocker_img = this.imgs.bl_prev;
-        let rise = blocker.slot.rise;
-        let run = blocker.slot.run;
-    
-        let angle = this.rotations[this.angle_label(rise, run)];
 
-        this.p5.translate(blocker.slot.midpoint[0], blocker.slot.midpoint[1]);
-        this.p5.rotate(angle);
-        
-        this.p5.image(blocker_img, 0, 0,
-          100,
-          100,
-          ...this.color_crops[blocker.color]);
-              
-        this.p5.rotate(-angle);
-        this.p5.translate(-blocker.slot.midpoint[0], -blocker.slot.midpoint[1]);
+        this.draw_blocker(blocker, blocker_img);
 
       } else if (move.constructor.name === 'Arrow') {
         let arrow = move;
         let arrow_img = arrow.color === 'b' ? this.imgs.ab_prev : this.imgs.aw_prev;
         arrow_img.resize(90, 90);
-
-        let rise = board.stations[arrow.to_station].y - board.stations[arrow.from_station].y;
-        let run = board.stations[arrow.to_station].x - board.stations[arrow.from_station].x;
-      
-        let angle = this.rotations[this.angle_label(rise, run)];
-  
-        this.p5.translate(arrow.slot.midpoint[0], arrow.slot.midpoint[1]);
-        this.p5.rotate(angle);
-
-        this.p5.image(arrow_img, 0, 0);
-
-        this.p5.rotate(-angle);
-        this.p5.translate(-arrow.slot.midpoint[0], -arrow.slot.midpoint[1]);
+        this.draw_arrow(arrow, arrow_img, board);
       }
+    }
+
+    draw_blocker(blocker, blocker_img) {
+      let rise = blocker.slot.rise;
+      let run = blocker.slot.run;
+  
+      let angle = this.rotations[this.angle_label(rise, run)];
+
+      this.p5.translate(blocker.slot.midpoint[0], blocker.slot.midpoint[1]);
+      this.p5.rotate(angle);
+      
+      this.p5.image(blocker_img, 0, 0,
+        100,
+        100,
+        ...this.color_crops[blocker.color]);
+            
+      this.p5.rotate(-angle);
+      this.p5.translate(-blocker.slot.midpoint[0], -blocker.slot.midpoint[1]);
+    }
+
+    draw_arrow(arrow, arrow_img, board) {
+      let rise = board.stations[arrow.to_station].y - board.stations[arrow.from_station].y;
+      let run = board.stations[arrow.to_station].x - board.stations[arrow.from_station].x;
+    
+      let angle = this.rotations[this.angle_label(rise, run)];
+
+      this.p5.translate(arrow.slot.midpoint[0], arrow.slot.midpoint[1]);
+      this.p5.rotate(angle);
+
+      this.p5.image(arrow_img, 0, 0);
+
+      this.p5.rotate(-angle);
+      this.p5.translate(-arrow.slot.midpoint[0], -arrow.slot.midpoint[1]);
     }
 
     angle_label(rise, run) {

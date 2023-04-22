@@ -22,11 +22,11 @@ const PlayerPanel = ({ player, gm }) => {
           gm.set_player_agent(player, e.target.value);
         }}>
         <option value="human-loc">Local Human</option>
-        <option value="human-rem">Remote Human</option>
-        <option value="ai-random">Random moves AI</option>
-        <option value="ai-easy">Easy AI</option>
-        <option value="ai-hard">Hard AI</option>
-        <option value="ai-custom">Custom AI</option>
+        <option disabled value="human-rem">Remote Human</option>
+        <option value="ai-random">Random Moves AI</option>
+        <option disabled value="ai-easy">Easy AI</option>
+        <option disabled value="ai-hard">Hard AI</option>
+        <option disabled value="ai-custom">Custom AI</option>
       </Form.Select>
       { gm.players_to_agents[player] === 'human-loc' ? (
         <HumanControlPanel player={ player } gm = { gm } />
@@ -44,7 +44,7 @@ const PlayerPanel = ({ player, gm }) => {
             medal_img ?
             ((<div className="no-play-panel">
               <div>
-              <img src={medal_img} 
+              <img src={medal_img} alt="Medal"
                 className="medal"/>
               </div></div>))
             :

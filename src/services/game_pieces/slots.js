@@ -342,6 +342,7 @@ station_numbers.forEach((from_station) => {
 }); 
 
 function set_up_slot_relations() {
+  /* eslint-disable no-lone-blocks*/
   {
     slots[0].interferes_with = [17, 18];
     slots[2].interferes_with = [3, 27];
@@ -399,7 +400,7 @@ function set_up_slot_relations() {
     slots[16].neighbors = [15, 17];
     slots[17].neighbors = [15, 16];
     slots[18].neighbors = [19, 20];
-    slots[19].neighbors = [18, 29];
+    slots[19].neighbors = [18, 20];
     slots[20].neighbors = [18, 19];
     slots[21].neighbors = [22, 23];
     slots[22].neighbors = [21, 23];

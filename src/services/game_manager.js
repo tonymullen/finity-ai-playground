@@ -5,7 +5,7 @@ import Ring from './game_pieces/ring';
 import Board from './board';
 import GameState from './game_state';
 import { pathAnalyzer } from './path_analyzer';
-import player_agents from './player_agents';
+import { player_agent_moves } from './player_agents';
 
 /**
  * Game manager class
@@ -243,7 +243,7 @@ class GameManager {
    * @param {String}
    */
   async handle_player_move(player_agent) {
-    let move = await player_agents[player_agent]();
+    let move = await player_agent_moves[player_agent]();
     console.log("Received move")
     console.log(move);
     if (move) {
@@ -382,6 +382,11 @@ class GameManager {
     this.reevaluate_ring_support();
   }
 
+  /**
+   * Place a blocker on the board
+   * 
+   * @param {Blocker} blocker 
+   */
   place_blocker(blocker){
     let placed_blocker = 
       new Blocker(blocker.color, null, null, null, blocker.slot, false);
@@ -408,6 +413,9 @@ class GameManager {
     blocker.to_move = false;
   }
 
+  /**
+   * Handle user click to make/finalize move
+   */
   handle_move_click() {
     if (this.move_to_finalize) {
       if (this.move_to_finalize.constructor.name === 'Arrow') {
@@ -602,7 +610,8 @@ class GameManager {
     let reachable_stations = pathAnalyzer.reachable_stations(color, this.board, this.game_state);
     let rings = this.game_state.rings.filter(ring => ring.color === color);
     rings.forEach(ring => {
-      if (!reachable_stations.has(ring.station.number)) {
+      if (!reachable_stations.has(ring.station.number) && 
+          ring.station.number !== '0,0') {
         this.remove_ring(ring);
       }
     })
@@ -699,6 +708,15 @@ class GameManager {
     }
   }
 
+  /**
+   * Check whether an arrow is redundant
+   * i.e. slot has neighbor with same color arrow and same destination
+   * 
+   * @param {Slot} slot 
+   * @param {String} to_point 
+   * @param {String} color 
+   * @returns {boolean}
+   */
   not_redundant(slot, to_point, color) {
     let not_redundant = true;
     slot.neighbors.forEach(ind => {
@@ -712,6 +730,9 @@ class GameManager {
     return not_redundant;
   }
 
+  /**
+   * Check to see if the game has a winner
+   */
   check_victory() {
     this.player_colors().forEach(color => {
       if (this.game_state.rings.filter(
@@ -730,14 +751,29 @@ class GameManager {
   }
 
   // Getters and utilities
+  /**
+   * Get game state
+   * 
+   * @returns GameState
+   */
   get_game_state() {
     return this.game_state;
   }
 
+  /**
+   * Set whether game board needs redrawing
+   * (avoid unnecessary draw cycles)
+   * 
+   * @param {bool} bool 
+   */
   set_needs_redraw(bool) {
     this.needs_redraw = bool;
   }
 
+  /**
+   * Force a React redraw by setting
+   * App state
+   */
   redraw() {
     this.app.setState({});
     this.needs_redraw = true;
