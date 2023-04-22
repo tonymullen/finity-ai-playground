@@ -1,6 +1,5 @@
 class PathAnalyzer {
     
-
     reachable_stations(color, board, game_state, station_ind) {
         // station_ind is optional default is reachable
         // stations from current station. If station_ind is passed,

@@ -308,14 +308,9 @@ class GameManager {
    * @param {BasePost} base_post 
    */
   move_base_post(base_post) {
-    this.game_state.base_posts.forEach( bp => {
-      if (bp.color === base_post.color) {
-        bp.station.base_post = null;
-        base_post.station.base_post = base_post;
-        bp.station = base_post.station;
-        this.reevaluate_ring_support();
-      }
-    });
+    this.game_state.remove_base_post(base_post);
+    this.game_state.place_base_post(base_post);
+    this.reevaluate_ring_support();
   }
 
   /**
@@ -324,15 +319,7 @@ class GameManager {
    * @param {Ring} ring 
    */
   place_ring(ring) {
-    let station_id = ring.station.number;
-    this.game_state.rings.push(ring);
-    if (ring.size === 's') {
-      this.board.stations[station_id].rings[0] = ring;
-    } else if (ring.size === 'm') {
-      this.board.stations[station_id].rings[1] = ring;
-    } else if (ring.size === 'l') {
-      this.board.stations[station_id].rings[2] = ring;
-    }
+    this.game_state.place_ring(ring);
   }
 
   /**
@@ -341,17 +328,7 @@ class GameManager {
    * @param {Ring} ring 
    */
   remove_ring(ring) {
-    let station_id = ring.station.number;
-    this.game_state.rings = this.game_state.rings.filter(r => r !== ring);
-    this.board.stations[station_id].rings = this.board.stations[station_id].rings.map(
-      r => {
-        if(r === ring) {
-          return null;
-        } else {
-          return r;
-        }
-      }
-    );
+    this.game_state.remove_ring(ring);
   }
 
   /**
@@ -360,13 +337,7 @@ class GameManager {
    * @param {Arrow} arrow 
    */
   place_arrow(arrow){
-      let placed_arrow = 
-        new Arrow(arrow.color, 
-                  arrow.from_station,
-                  arrow.to_station, 
-                  arrow.slot, false);
-      arrow.slot.add_arrow(placed_arrow, this.game_state.board);
-      this.game_state.arrows.push(arrow);
+    this.game_state.place_arrow(arrow);
   }
 
   /**
@@ -375,10 +346,7 @@ class GameManager {
    * @param {Arrow} arrow 
    */
   remove_arrow(arrow) {
-    arrow.slot.remove_arrow(this.game_state.board);
-    this.game_state.arrows = this.game_state.arrows.filter( 
-      a => a !== arrow 
-    );
+    this.game_state.remove_arrow(arrow);
     this.reevaluate_ring_support();
   }
 
@@ -388,16 +356,8 @@ class GameManager {
    * @param {Blocker} blocker 
    */
   place_blocker(blocker){
-    let placed_blocker = 
-      new Blocker(blocker.color, null, null, null, blocker.slot, false);
-    blocker.slot.add_blocker(placed_blocker);
-    this.game_state.blockers.push(placed_blocker);
-    // Remove blocker that was set to move (previous position)
-    this.game_state.blockers = this.game_state.blockers.filter( 
-      b => b.to_move === false 
-    );
-    this.piece_to_move.slot.contains = null;
-    this.piece_to_move = null;
+    this.game_state.place_blocker(blocker);
+    this.game_state.remove_blocker(this.piece_to_move);
   }
   
   /**
@@ -406,11 +366,7 @@ class GameManager {
    * @param {Blocker} blocker 
    */
   remove_blocker(blocker) {
-    blocker.slot.contains = null;
-    this.game_state.blockers = this.game_state.blockers.filter( 
-      b => b.to_move === false 
-    );
-    blocker.to_move = false;
+    this.game_state.remove_blocker(blocker);
   }
 
   /**
@@ -459,6 +415,9 @@ class GameManager {
    * @returns {(Ring|BasePost|Blocker|Arrow)}
    */
   generate_move_preview(mouse_x, mouse_y) {
+    const LARGE_MOUSEOVER = 30;
+    const MED_MOUSEOVER = 20;
+    const SMALL_MOUSEOVER = 15;
     const move_cancel_x_range = [50, 750];
     const move_cancel_y_range = [1,  648];
     let preview = this.move_to_finalize;
@@ -469,8 +428,8 @@ class GameManager {
     if (this.move_in_progress === 'ring') {
       Object.keys(this.board.stations).forEach( stat_key => {
         let station = this.board.stations[stat_key];
-        if (Math.abs(mouse_x - station.x) < 30 && 
-            Math.abs(mouse_y - station.y) < 30) {
+        if (Math.abs(mouse_x - station.x) < LARGE_MOUSEOVER && 
+            Math.abs(mouse_y - station.y) < LARGE_MOUSEOVER) {
               if (stat_key !== '0,0') {
                 if (this.can_place_ring(station, this.player_moving)) {
                   let size = 's';
@@ -489,8 +448,8 @@ class GameManager {
     } else if (this.move_in_progress === 'base-post') {
       Object.keys(this.board.stations).forEach( stat_key => {
         let station = this.board.stations[stat_key];
-        if (Math.abs(mouse_x - station.x) < 30 && 
-            Math.abs(mouse_y - station.y) < 30) {
+        if (Math.abs(mouse_x - station.x) < LARGE_MOUSEOVER && 
+            Math.abs(mouse_y - station.y) < LARGE_MOUSEOVER) {
               if (stat_key !== '0,0') {
                 if (this.can_move_base_post(station, this.player_moving)) {
                   preview  = new BasePost(this.player_moving, station);
@@ -502,8 +461,8 @@ class GameManager {
     } else if (this.move_in_progress === 'blocker') {
       let mouse_off = true;
       this.game_state.blockers.forEach( blocker => {
-        if (Math.abs(mouse_x - blocker.slot.midpoint[0]) < 15 && 
-            Math.abs(mouse_y - blocker.slot.midpoint[1]) < 15 && 
+        if (Math.abs(mouse_x - blocker.slot.midpoint[0]) < SMALL_MOUSEOVER && 
+            Math.abs(mouse_y - blocker.slot.midpoint[1]) < SMALL_MOUSEOVER && 
             blocker.color === this.player_moving){
               mouse_off = false;
               this.piece_to_move = blocker;
@@ -525,8 +484,8 @@ class GameManager {
       this.board.slots.forEach( slot => {
         // For <4 player games, some slot midpoints are undefined
         if (slot.midpoint && slot.contains === null) {
-          if (Math.abs(mouse_x - slot.midpoint[0]) < 20 && 
-              Math.abs(mouse_y - slot.midpoint[1]) < 20) {
+          if (Math.abs(mouse_x - slot.midpoint[0]) < MED_MOUSEOVER && 
+              Math.abs(mouse_y - slot.midpoint[1]) < MED_MOUSEOVER) {
                 slot.preview_blocker.color = this.player_moving;
                 preview = slot.preview_blocker;                
             } 
@@ -536,8 +495,8 @@ class GameManager {
     } else if (this.move_in_progress === 'opp-blocker') {
       this.game_state.blockers.forEach( blocker => {
         if (blocker.color !== this.player_moving && 
-            Math.abs(mouse_x - blocker.slot.midpoint[0]) < 15 && 
-            Math.abs(mouse_y - blocker.slot.midpoint[1]) < 15 ){
+            Math.abs(mouse_x - blocker.slot.midpoint[0]) < SMALL_MOUSEOVER && 
+            Math.abs(mouse_y - blocker.slot.midpoint[1]) < SMALL_MOUSEOVER ){
               this.move_to_finalize = blocker;
               blocker.to_move = true;
           } else {
@@ -551,8 +510,8 @@ class GameManager {
               if (slot.contains === null && !slot.blocked) {
                 let from_stations = Object.keys(slot.to_points)
                 from_stations.forEach(to_point => {
-                  if (Math.abs(mouse_x - slot.to_points[to_point][0]) < 15 && 
-                    Math.abs(mouse_y - slot.to_points[to_point][1]) < 15) {
+                  if (Math.abs(mouse_x - slot.to_points[to_point][0]) < SMALL_MOUSEOVER && 
+                    Math.abs(mouse_y - slot.to_points[to_point][1]) < SMALL_MOUSEOVER) {
                       if (this.not_redundant(slot, to_point, arrow_color)) {
                         preview = slot.preview_arrows[to_point]; 
                         preview.color = arrow_color;
@@ -564,8 +523,8 @@ class GameManager {
       this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'rem-arrow') {
       this.game_state.arrows.forEach(arrow => {
-        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < 15 && 
-              Math.abs(mouse_y - arrow.slot.midpoint[1]) < 15) {
+        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER && 
+              Math.abs(mouse_y - arrow.slot.midpoint[1]) < SMALL_MOUSEOVER) {
                 if (this.occupies_high_point(this.player_moving, arrow)) {
                   preview = arrow
                 }
@@ -574,8 +533,8 @@ class GameManager {
       this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'rev-arrow') {
       this.game_state.arrows.forEach(arrow => {
-        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < 15 && 
-              Math.abs(mouse_y - arrow.slot.midpoint[1]) < 15) {
+        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER && 
+              Math.abs(mouse_y - arrow.slot.midpoint[1]) < SMALL_MOUSEOVER) {
                 if (this.not_redundant(arrow.slot, arrow.from_station, arrow.color)) {
                   this.piece_to_move = arrow;
                   arrow.to_move = true;
@@ -595,9 +554,10 @@ class GameManager {
    * orphans
    */
   reevaluate_ring_support() {
-    this.game_state.base_posts.forEach(bp => {
-      this.clear_orphans(bp.color);
-    })
+    this.game_state.reevaluate_ring_support();
+    // this.game_state.base_posts.forEach(bp => {
+    //   this.clear_orphans(bp.color);
+    // })
   }
 
   /**
@@ -606,16 +566,17 @@ class GameManager {
    * 
    * @param {String} color 
    */
-  clear_orphans(color) {
-    let reachable_stations = pathAnalyzer.reachable_stations(color, this.board, this.game_state);
-    let rings = this.game_state.rings.filter(ring => ring.color === color);
-    rings.forEach(ring => {
-      if (!reachable_stations.has(ring.station.number) && 
-          ring.station.number !== '0,0') {
-        this.remove_ring(ring);
-      }
-    })
-  }
+  // clear_orphans(color) {
+  //   let reachable_stations = pathAnalyzer.reachable_stations(
+  //     color, this.board, this.game_state);
+  //   let rings = this.game_state.rings.filter(ring => ring.color === color);
+  //   rings.forEach(ring => {
+  //     if (!reachable_stations.has(ring.station.number) && 
+  //         ring.station.number !== '0,0') {
+  //       this.remove_ring(ring);
+  //     }
+  //   })
+  // }
 
   /**
    * Determine whether a ring can be placed
