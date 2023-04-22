@@ -9,3 +9,5 @@ class Move {
         this.piece_to_remove = piece_to_remove;
     }
 }
+
+export default Move;

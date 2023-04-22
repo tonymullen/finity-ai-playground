@@ -1,9 +1,10 @@
 import BasePost from './game_pieces/base_post';
-import Arrow from './game_pieces/arrow';
+// import Arrow from './game_pieces/arrow';
 import Blocker from './game_pieces/blocker';
 import Ring from './game_pieces/ring';
 import Board from './board';
 import GameState from './game_state';
+import Move from './move';
 import { pathAnalyzer } from './path_analyzer';
 import { player_agent_moves } from './player_agents';
 
@@ -307,67 +308,67 @@ class GameManager {
    * 
    * @param {BasePost} base_post 
    */
-  move_base_post(base_post) {
-    this.game_state.remove_base_post(base_post);
-    this.game_state.place_base_post(base_post);
-    this.reevaluate_ring_support();
-  }
+  // move_base_post(base_post) {
+  //   this.game_state.remove_base_post(base_post);
+  //   this.game_state.place_base_post(base_post);
+  //   this.reevaluate_ring_support();
+  // }
 
   /**
    * Place a ring on a station
    * 
    * @param {Ring} ring 
    */
-  place_ring(ring) {
-    this.game_state.place_ring(ring);
-  }
+  // place_ring(ring) {
+  //   this.game_state.place_ring(ring);
+  // }
 
-  /**
-   * Remove a ring from the board
-   * 
-   * @param {Ring} ring 
-   */
-  remove_ring(ring) {
-    this.game_state.remove_ring(ring);
-  }
+  // /**
+  //  * Remove a ring from the board
+  //  * 
+  //  * @param {Ring} ring 
+  //  */
+  // remove_ring(ring) {
+  //   this.game_state.remove_ring(ring);
+  // }
 
-  /**
-   * Place an arrow on the board
-   * 
-   * @param {Arrow} arrow 
-   */
-  place_arrow(arrow){
-    this.game_state.place_arrow(arrow);
-  }
+  // /**
+  //  * Place an arrow on the board
+  //  * 
+  //  * @param {Arrow} arrow 
+  //  */
+  // place_arrow(arrow){
+  //   this.game_state.place_arrow(arrow);
+  // }
 
   /**
    * Remove an arrow from the board
    * 
    * @param {Arrow} arrow 
    */
-  remove_arrow(arrow) {
-    this.game_state.remove_arrow(arrow);
-    this.reevaluate_ring_support();
-  }
+  // remove_arrow(arrow) {
+  //   this.game_state.remove_arrow(arrow);
+  //   this.reevaluate_ring_support();
+  // }
 
   /**
    * Place a blocker on the board
    * 
    * @param {Blocker} blocker 
-   */
-  place_blocker(blocker){
-    this.game_state.place_blocker(blocker);
-    this.game_state.remove_blocker(this.piece_to_move);
-  }
+  //  */
+  // place_blocker(blocker){
+  //   this.game_state.place_blocker(blocker);
+  //   this.game_state.remove_blocker(this.piece_to_move);
+  // }
   
-  /**
-   * Remove a blocker from the board
-   * 
-   * @param {Blocker} blocker 
-   */
-  remove_blocker(blocker) {
-    this.game_state.remove_blocker(blocker);
-  }
+  // /**
+  //  * Remove a blocker from the board
+  //  * 
+  //  * @param {Blocker} blocker 
+  //  */
+  // remove_blocker(blocker) {
+  //   this.game_state.remove_blocker(blocker);
+  // }
 
   /**
    * Handle user click to make/finalize move
@@ -377,25 +378,53 @@ class GameManager {
       if (this.move_to_finalize.constructor.name === 'Arrow') {
         if (this.move_in_progress==='b-arrow'||
             this.move_in_progress==='w-arrow') {
-          this.place_arrow(this.move_to_finalize);
+          // this.place_arrow(this.move_to_finalize);
+
+          let move_type = 'place';
+          let piece_to_add = this.move_to_finalize;
+          this.game_state.apply_move(new Move({ move_type, piece_to_add }));
+
         } else if (this.move_in_progress==='rem-arrow') {
-          this.remove_arrow(this.move_to_finalize);
+          // this.remove_arrow(this.move_to_finalize);
+          let move_type = 'remove';
+          let piece_to_remove = this.move_to_finalize;
+          this.game_state.apply_move(new Move({ move_type, piece_to_remove }));
         } else if (this.move_in_progress==='rev-arrow') {
-          this.remove_arrow(this.piece_to_move);
-          this.place_arrow(this.move_to_finalize);
+          let move_type = 'replace';
+          let piece_to_remove = this.piece_to_move;
+          let piece_to_add = this.move_to_finalize;
+          this.game_state.apply_move(new Move({ move_type, piece_to_add, piece_to_remove }));
+
+          // this.remove_arrow(this.piece_to_move);
+          // this.place_arrow(this.move_to_finalize);
         }
       }
       else if (this.move_to_finalize.constructor.name === 'Ring') {
-        this.place_ring(this.move_to_finalize);
+        let move_type = 'place';
+        let piece_to_add = this.move_to_finalize;
+        this.game_state.apply_move(new Move({ move_type, piece_to_add }));
+        // this.place_ring(this.move_to_finalize);
       }
       else if (this.move_to_finalize.constructor.name === 'BasePost') {
-        this.move_base_post(this.move_to_finalize);
+        let move_type = 'replace';
+        let piece_to_add = this.move_to_finalize;
+        this.game_state.apply_move(new Move({ move_type, piece_to_add }));
+        // this.move_base_post(this.move_to_finalize);
       }
       else if (this.move_to_finalize.constructor.name === 'Blocker') {
         if (this.move_in_progress==='blocker-place') {
-          this.place_blocker(this.move_to_finalize);
+          let move_type = 'replace';
+          let piece_to_add = this.move_to_finalize;
+          let piece_to_remove = this.piece_to_move;
+          this.game_state.apply_move(new Move({ move_type, piece_to_add, piece_to_remove }));
+
+          // this.place_blocker(this.move_to_finalize);
         } else if (this.move_in_progress==='opp-blocker') {
-          this.remove_blocker(this.move_to_finalize);
+          let move_type = 'remove';
+          let piece_to_remove = this.move_to_finalize;
+          this.game_state.apply_move(new Move({ move_type, piece_to_remove }));
+
+          // this.remove_blocker(this.move_to_finalize);
         }
       }
       this.finalize_move();

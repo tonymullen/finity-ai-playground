@@ -29,31 +29,31 @@ class GameState {
         
     }
 
-    apply_move(move) {
-        let move_type = move.move_type;
-        let piece_to_add = move.piece_to_add;
-        let piece_to_remove = move.piece_to_remove;
-
+    apply_move({move_type, piece_to_add, piece_to_remove}) {
         if (move_type === "place") {
             if (piece_to_add.constructor.name === "Arrow") {
-
+                this.place_arrow(piece_to_add);
             } else if (piece_to_add.constructor.name === "Ring") {
-
+                this.place_ring(piece_to_add);
             }
         } else if (move_type === "remove") {
             if (piece_to_remove.constructor.name === "Arrow") {
-
+                this.remove_arrow(piece_to_remove);
             } else if (piece_to_remove.constructor.name === "Blocker") {
-
+                this.remove_blocker(piece_to_remove);
             }
-            
         } else if (move_type === "replace") {
-            if (piece_to_remove.constructor.name === "Arrow") {
-
-            } else if (piece_to_remove.constructor.name === "Blocker") {
-
-            } else if (piece_to_remove.constructor.name === "BasePost") {
-
+            if (piece_to_add.constructor.name === "Arrow") {
+                this.remove_arrow(piece_to_remove);
+                this.place_arrow(piece_to_add);
+            } else if (piece_to_add.constructor.name === "Blocker") {
+                this.remove_blocker(piece_to_remove);
+                this.place_blocker(piece_to_add);
+            } else if (piece_to_add.constructor.name === "BasePost") {
+                // We remove the object from one station and
+                // place the same object on another station
+                this.remove_base_post(piece_to_add);
+                this.place_base_post(piece_to_add);
             }
         }
     }
@@ -83,11 +83,11 @@ class GameState {
      * @param {Arrow} arrow 
      */
     remove_arrow(arrow) {
-        console.log(arrow);
         arrow.slot.remove_arrow(this.board);
         this.arrows = this.arrows.filter( 
             a => a !== arrow 
         );
+        this.reevaluate_ring_support();
     }
 
     /**
