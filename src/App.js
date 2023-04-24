@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+// import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 import GameManager from "./services/game_manager";
 import FinityCanvas from "./components/FinityCanvas";
@@ -19,7 +19,7 @@ class App extends React.Component {
       <div className="App">
         <div id="header">
           <div id="header-container">
-            <a href="https://www.finitygame.com/" target="_blank">
+            <a href="https://www.finitygame.com/" target="_blank" rel="noreferrer">
               <img src={require("./img/FinityLogo50trans-01.png")} 
                   alt="Finity Logo" id="finity-logo"/>
             </a>

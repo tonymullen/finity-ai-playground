@@ -1,3 +1,5 @@
+import { game_state as gs } from '../../game_state';
+
 const agent = {
     "label": "ai_random",
     "description": "A simple AI that produces a randomly selected legal move",
@@ -14,9 +16,11 @@ const agent = {
  */
 function move(game_state, last_move) {
     const move = new Promise((resolve, reject) => {
+      let arrows = gs.arrows;
+      console.log(arrows);
 
         setTimeout(() => {
-          resolve("My Random AI move");
+          resolve("My Random AI move", arrows);
         }, 2000);
 
       });

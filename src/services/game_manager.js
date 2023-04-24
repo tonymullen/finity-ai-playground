@@ -1,9 +1,10 @@
 import BasePost from './game_pieces/base_post';
 // import Arrow from './game_pieces/arrow';
-import Blocker from './game_pieces/blocker';
+// import Blocker from './game_pieces/blocker';
 import Ring from './game_pieces/ring';
-import Board from './board';
-import GameState from './game_state';
+// import Board from './board';
+// import GameState from './game_state';
+import { game_state } from './game_state';
 import Move from './move';
 import { pathAnalyzer } from './path_analyzer';
 import { player_agent_moves } from './player_agents';
@@ -13,10 +14,14 @@ import { player_agent_moves } from './player_agents';
  */
 class GameManager {
   constructor(app) {
-    this.app = app;
-    this.players = this.get_players();
-    this.board = new Board(this.player_count());
-    this.reset_game_state();
+    // this.app = app;
+    
+    //this.players = this.get_players();
+    // this.board = new Board(this.player_count());
+    this.game_state = game_state;
+    this.board = this.game_state.board;
+    this.players = this.game_state.players;
+    
     // default player agent is local human
     this.players_to_agents = {
       'cyan': 'human-loc',
@@ -42,6 +47,7 @@ class GameManager {
    */
   set_app(app) {
     this.app = app;
+    this.redraw();
   }
 
   /**
@@ -66,34 +72,31 @@ class GameManager {
    * Reset the board for a particular number of players
    * @param {Number} num 
    */
-  reset_board(num) {
-    if (num !== this.board.num_players) {
-      this.board.setup_board(num);
-      this.reset_game_state();
-      this.turn_index = 0;
-      this.player_moving = null;
-      this.move_in_progress = null;
-      this.move_to_finalize = null;
-      this.piece_to_move = null;
-      this.needs_redraw = true;
-      this.redraw();
-    }
-  }
+  // reset_board(num) {
+  //   if (num !== this.board.num_players) {
+  //     this.board.setup_board(num);
+  //     this.reset_game_state();
+  //     this.turn_index = 0;
+  //     this.player_moving = null;
+  //     this.move_in_progress = null;
+  //     this.move_to_finalize = null;
+  //     this.piece_to_move = null;
+  //     this.needs_redraw = true;
+  //     this.redraw();
+  //   }
+  // }
 
   /**
    * Reset the game state
    */
-  reset_game_state() {   
-    this.game_state = new GameState({
-      board: this.board,
-      path_pattern: this.generate_path_pattern(),
-      arrows: [], 
-      rings: this.set_up_rings(),
-      blockers: this.set_up_blockers(),
-      base_posts: this.set_up_base_posts(),
-      winners: [], 
-      play_status: null,
-    }); 
+  reset_game_state(players) { 
+    this.game_state.reset(players);
+    this.turn_index = 0;
+    this.player_moving = null;
+    this.move_in_progress = null;
+    this.move_to_finalize = null;
+    this.piece_to_move = null;
+    this.redraw();
   }
 
   /**
@@ -108,7 +111,8 @@ class GameManager {
       this.players[color] = !this.players[color];
       
       window.localStorage.setItem("players", JSON.stringify(this.players));
-      this.reset_board(this.player_count());
+      // this.reset_board(this.player_count());
+      this.reset_game_state(Object.keys(this.players).filter( p => this.players[p]));
       this.redraw();
     }
   }
@@ -122,14 +126,6 @@ class GameManager {
   }
 
   /**
-   * Return list of player colors
-   * @returns {String[]}
-   */
-  player_colors() {
-    return Object.keys(this.players).filter( p => this.players[p]);
-  }
-
-  /**
    * Set the player agent (human, AI, etc) for a color
    * @param {String} color 
    * @param {String} agent 
@@ -139,76 +135,9 @@ class GameManager {
     this.redraw();
   }
 
-  /**
-   * Set up rings on center station for initial players
-   * @returns {Ring[]}
-   */
-  set_up_rings() {
-    let rings = [];
-    let center_station = this.board.stations['0,0'];
-    this.player_colors().reverse().forEach( (color) => {
-      let ring = new Ring(color, 'l', center_station)
-      rings.push(ring);
-      center_station.rings.push(ring);
-    });
-    return rings;
+  player_colors() {
+    return this.game_state.player_colors();
   }
-
-  /**
-   * Set up base posts for players
-   * @returns {BasePost[]}
-   */
-  set_up_base_posts() {
-    let base_posts = [];
-    this.player_colors().forEach( (color, ind) => {
-      let bp = new BasePost(color, this.board.stations[
-        this.board.start_stations[ind]
-      ])
-      base_posts.push(bp);
-      this.board.stations[
-        this.board.start_stations[ind]
-      ].base_post = bp;
-    });
-    return base_posts;
-  }
-
-  /**
-   * Set up blockers for players
-   * @returns {Blocker[]}
-   */
-  set_up_blockers() {
-    let blockers= [];
-    this.player_colors().forEach( (color, ind) => {
-      blockers.push(new Blocker(color, 
-        this.board.stations[
-          this.board.start_stations[ind]],
-        this.board.stations['0,0'],
-        'l'
-        ));
-      blockers.push(new Blocker(color,
-        this.board.stations[
-          this.board.start_stations[ind]],
-        this.board.stations['0,0'],
-        'r'
-        ));
-    });
-    return blockers;
-  }
-
-  /**
-   * Generate random path pattern
-   * @returns {String[]}
-   */
-  generate_path_pattern() {
-    const colors = ['b', 'w'];
-    let pattern = Array.from({length: 8}, () => colors[Math.round(Math.random())]);
-    while (pattern.filter( (color) => color === 'b').length < 2 ||
-        pattern.filter( (color) => color === 'w').length < 2) {
-          // bad pattern, try again
-          pattern = Array.from({length: 8}, () => colors[Math.round(Math.random())]);
-        }
-    return pattern;
-  } 
 
   // Turn management
   /**
@@ -235,21 +164,7 @@ class GameManager {
         this.turn_index = (this.turn_index + 1) % this.player_count();
       }
     }
-    this.handle_player_move(this.players_to_agents[Object.keys(this.players)[this.turn_index]]);
-  }
-
-  /**
-   * Handle player move
-   * 
-   * @param {String}
-   */
-  async handle_player_move(player_agent) {
-    let move = await player_agent_moves[player_agent]();
-    console.log("Received move")
-    console.log(move);
-    if (move) {
-      this.finalize_move();
-    }
+    this.handle_player_agent_move(this.players_to_agents[Object.keys(this.players)[this.turn_index]]);
   }
 
   /**
@@ -302,131 +217,59 @@ class GameManager {
     this.redraw();
   }
 
-  // Moves
   /**
-   * Move a base post
+   * Handle player move
    * 
-   * @param {BasePost} base_post 
+   * @param {String}
    */
-  // move_base_post(base_post) {
-  //   this.game_state.remove_base_post(base_post);
-  //   this.game_state.place_base_post(base_post);
-  //   this.reevaluate_ring_support();
-  // }
-
-  /**
-   * Place a ring on a station
-   * 
-   * @param {Ring} ring 
-   */
-  // place_ring(ring) {
-  //   this.game_state.place_ring(ring);
-  // }
-
-  // /**
-  //  * Remove a ring from the board
-  //  * 
-  //  * @param {Ring} ring 
-  //  */
-  // remove_ring(ring) {
-  //   this.game_state.remove_ring(ring);
-  // }
-
-  // /**
-  //  * Place an arrow on the board
-  //  * 
-  //  * @param {Arrow} arrow 
-  //  */
-  // place_arrow(arrow){
-  //   this.game_state.place_arrow(arrow);
-  // }
-
-  /**
-   * Remove an arrow from the board
-   * 
-   * @param {Arrow} arrow 
-   */
-  // remove_arrow(arrow) {
-  //   this.game_state.remove_arrow(arrow);
-  //   this.reevaluate_ring_support();
-  // }
-
-  /**
-   * Place a blocker on the board
-   * 
-   * @param {Blocker} blocker 
-  //  */
-  // place_blocker(blocker){
-  //   this.game_state.place_blocker(blocker);
-  //   this.game_state.remove_blocker(this.piece_to_move);
-  // }
-  
-  // /**
-  //  * Remove a blocker from the board
-  //  * 
-  //  * @param {Blocker} blocker 
-  //  */
-  // remove_blocker(blocker) {
-  //   this.game_state.remove_blocker(blocker);
-  // }
+  async handle_player_agent_move(player_agent) {
+    let move = await player_agent_moves[player_agent]();
+    // move is instantiated only for non-local-human agents
+    // local-human agents' moves are handled interactively
+    if (move) {
+      this.finalize_move();
+    }
+  }
 
   /**
    * Handle user click to make/finalize move
    */
   handle_move_click() {
     if (this.move_to_finalize) {
+      let move_type, piece_to_add, piece_to_remove = null;
       if (this.move_to_finalize.constructor.name === 'Arrow') {
         if (this.move_in_progress==='b-arrow'||
             this.move_in_progress==='w-arrow') {
-          // this.place_arrow(this.move_to_finalize);
-
-          let move_type = 'place';
-          let piece_to_add = this.move_to_finalize;
-          this.game_state.apply_move(new Move({ move_type, piece_to_add }));
-
+          move_type = 'place';
+          piece_to_add = this.move_to_finalize;
         } else if (this.move_in_progress==='rem-arrow') {
-          // this.remove_arrow(this.move_to_finalize);
-          let move_type = 'remove';
-          let piece_to_remove = this.move_to_finalize;
-          this.game_state.apply_move(new Move({ move_type, piece_to_remove }));
+          move_type = 'remove';
+          piece_to_remove = this.move_to_finalize;
         } else if (this.move_in_progress==='rev-arrow') {
-          let move_type = 'replace';
-          let piece_to_remove = this.piece_to_move;
-          let piece_to_add = this.move_to_finalize;
-          this.game_state.apply_move(new Move({ move_type, piece_to_add, piece_to_remove }));
-
-          // this.remove_arrow(this.piece_to_move);
-          // this.place_arrow(this.move_to_finalize);
+          move_type = 'replace';
+          piece_to_remove = this.piece_to_move;
+          piece_to_add = this.move_to_finalize;
         }
       }
       else if (this.move_to_finalize.constructor.name === 'Ring') {
-        let move_type = 'place';
-        let piece_to_add = this.move_to_finalize;
-        this.game_state.apply_move(new Move({ move_type, piece_to_add }));
-        // this.place_ring(this.move_to_finalize);
+        move_type = 'place';
+        piece_to_add = this.move_to_finalize;
       }
       else if (this.move_to_finalize.constructor.name === 'BasePost') {
-        let move_type = 'replace';
-        let piece_to_add = this.move_to_finalize;
-        this.game_state.apply_move(new Move({ move_type, piece_to_add }));
-        // this.move_base_post(this.move_to_finalize);
+        move_type = 'replace';
+        piece_to_add = this.move_to_finalize;
       }
       else if (this.move_to_finalize.constructor.name === 'Blocker') {
         if (this.move_in_progress==='blocker-place') {
-          let move_type = 'replace';
-          let piece_to_add = this.move_to_finalize;
-          let piece_to_remove = this.piece_to_move;
-          this.game_state.apply_move(new Move({ move_type, piece_to_add, piece_to_remove }));
-
-          // this.place_blocker(this.move_to_finalize);
+          move_type = 'replace';
+          piece_to_add = this.move_to_finalize;
+          piece_to_remove = this.piece_to_move;
         } else if (this.move_in_progress==='opp-blocker') {
-          let move_type = 'remove';
-          let piece_to_remove = this.move_to_finalize;
-          this.game_state.apply_move(new Move({ move_type, piece_to_remove }));
-
-          // this.remove_blocker(this.move_to_finalize);
+          move_type = 'remove';
+          piece_to_remove = this.move_to_finalize;
         }
       }
+      this.game_state.apply_move(new Move({ move_type, piece_to_add, piece_to_remove }));
       this.finalize_move();
     } else if (this.move_in_progress === 'blocker') {
       if (this.piece_to_move) {
@@ -567,7 +410,7 @@ class GameManager {
                 if (this.not_redundant(arrow.slot, arrow.from_station, arrow.color)) {
                   this.piece_to_move = arrow;
                   arrow.to_move = true;
-                  preview = arrow.reverse()
+                  preview = arrow.reverse();
                 }
           }
       });
@@ -577,35 +420,7 @@ class GameManager {
     return preview;
   }
 
-  // Move and ring conditions
-  /**
-   * Check all players' paths for
-   * orphans
-   */
-  reevaluate_ring_support() {
-    this.game_state.reevaluate_ring_support();
-    // this.game_state.base_posts.forEach(bp => {
-    //   this.clear_orphans(bp.color);
-    // })
-  }
-
-  /**
-   * Clear single player (color)'s 
-   * orphan rings
-   * 
-   * @param {String} color 
-   */
-  // clear_orphans(color) {
-  //   let reachable_stations = pathAnalyzer.reachable_stations(
-  //     color, this.board, this.game_state);
-  //   let rings = this.game_state.rings.filter(ring => ring.color === color);
-  //   rings.forEach(ring => {
-  //     if (!reachable_stations.has(ring.station.number) && 
-  //         ring.station.number !== '0,0') {
-  //       this.remove_ring(ring);
-  //     }
-  //   })
-  // }
+  // Move conditions
 
   /**
    * Determine whether a ring can be placed

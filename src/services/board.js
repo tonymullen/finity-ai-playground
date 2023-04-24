@@ -15,6 +15,10 @@ class Board {
     this.start_stations = board_setup.start_stations;
     this.slots = board_setup.slots;
   }
+
+  duplicate() {
+    return new Board(this.num_players);
+  }
 }
 
 export default Board;

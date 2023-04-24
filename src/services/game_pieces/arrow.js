@@ -1,7 +1,12 @@
 import { slots } from './slots';
 
 class Arrow {
-  constructor(color, from_station, to_station, slot, is_preview) {
+  constructor({
+    color, 
+    from_station, 
+    to_station, 
+    slot, 
+    is_preview}={}) {
     this.color = color;
     this.is_preview = is_preview;
     this.from_station = from_station;
@@ -10,10 +15,21 @@ class Arrow {
   }
 
   reverse() {
-    let rev_arrow = new Arrow(this.color, 
-                              this.to_station, this.from_station, 
-                              this.slot);
+    let rev_arrow = new Arrow({
+      color: this.color, 
+      from_station: this.to_station, 
+      to_station: this.from_station, 
+      slot: this.slot});
     return rev_arrow;
+  }
+
+  duplicate() {
+    return new Arrow({
+      color: this.color, 
+      from_station: this.from_station, 
+      to_station: this.to_station, 
+      slot: this.slot, 
+      is_preview: this.is_preview});
   }
 }
 
@@ -21,7 +37,11 @@ class Arrow {
 slots.forEach((slot) => {
   slot.preview_arrows = {};
   Object.keys(slot.stations).forEach((stat) => {
-    slot.preview_arrows[stat] = new Arrow(null, slot.stations[stat], stat, slot, true);
+    slot.preview_arrows[stat] = new Arrow({
+      from_station: slot.stations[stat], 
+      to_station: stat, 
+      slot: slot, 
+      is_preview: true});
   });
 });
 

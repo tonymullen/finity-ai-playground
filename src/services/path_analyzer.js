@@ -1,8 +1,8 @@
 class PathAnalyzer {
     
     reachable_stations(color, board, game_state, station_ind) {
-        // station_ind is optional default is reachable
-        // stations from current station. If station_ind is passed,
+        // station_ind is optional. default is reachable
+        // stations from current base station. If station_ind is passed,
         // then returns reachable stations from that station
         let paths = this.legal_paths(color, board, game_state, station_ind);
         let path_concat = [].concat(...paths);
@@ -23,8 +23,8 @@ class PathAnalyzer {
     }
 
     legal_paths(color, board, game_state, station_ind) {
-        // station_ind is optional default is legal paths
-        // from current station. If station_ind is passed,
+        // station_ind is optional. default is legal paths
+        // from current base station. If station_ind is passed,
         // then returns legal paths from that station
         let base_post_path = [];
         if (!station_ind) {

@@ -3,7 +3,6 @@ import { slots } from './game_pieces/slots';
 
 class BoardSetup {
   constructor(count) {
-
     this.station_size = [200, 200];
     if (count === 2) {
       this.setup = this.twoPlayerSetup();
