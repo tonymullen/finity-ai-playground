@@ -304,7 +304,7 @@ class GameManager {
         if (Math.abs(mouse_x - station.x) < LARGE_MOUSEOVER && 
             Math.abs(mouse_y - station.y) < LARGE_MOUSEOVER) {
               if (stat_key !== '0,0') {
-                if (this.can_move_base_post(station, this.player_moving)) {
+                if (this.game_state.can_move_base_post(station, this.player_moving)) {
                   preview  = new BasePost(this.player_moving, station);
               }
             }
@@ -378,7 +378,7 @@ class GameManager {
       this.game_state.arrows.forEach(arrow => {
         if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER && 
               Math.abs(mouse_y - arrow.slot.midpoint[1]) < SMALL_MOUSEOVER) {
-                if (this.occupies_high_point(this.player_moving, arrow)) {
+                if (this.game_state.occupies_high_point(this.player_moving, arrow.to_station)) {
                   preview = arrow
                 }
           }
@@ -418,83 +418,6 @@ class GameManager {
               color, this.board, this.game_state
             ).has(station.number));
   }
-
-  /**
-   * Determine whether a base post can
-   * be moved to a given station
-   * 
-   * @param {Station} station 
-   * @param {String} color 
-   * @returns {boolean}
-   */
-  can_move_base_post(station, color) {
-    return (!station.base_post
-      && this.new_path_has_rings(station.number, color));
-  }
-
-  /**
-   * Check to see if a potential new path has rings
-   * to support base post move
-   * 
-   * @param {String} station_ind 
-   * @param {String} color 
-   * @returns {boolean}
-   */
-  new_path_has_rings(station_ind, color) {
-    let reachable_stations = pathAnalyzer.reachable_stations(
-      color, this.board, this.game_state, station_ind)
-    let has_remaining_rings = false;
-    reachable_stations.forEach(stat_ind => {
-      let stat_rings = this.board.stations[stat_ind].rings.filter(
-        r => r && r.color === color
-      );
-      if (stat_rings.length > 0) {
-        has_remaining_rings = true;
-        return;
-      }
-    });
-    return has_remaining_rings;
-  }
-
-  /**
-   * Check if a player color occupies the
-   * high point on an arrow destination station
-   * 
-   * @param {String} color 
-   * @param {Arrow} arrow 
-   * @returns {boolean}
-   */
-  occupies_high_point(color, arrow) {
-    if (
-      this.board.stations[arrow.to_station].base_post &&
-      this.board.stations[arrow.to_station].base_post.color === color) {
-      return true;
-    } else if (
-      !this.board.stations[arrow.to_station].base_post &&
-      this.board.stations[arrow.to_station].rings[0] && 
-      this.board.stations[arrow.to_station].rings[0].color === color) {
-        return true
-    } else if (
-      !this.board.stations[arrow.to_station].base_post &&
-      !this.board.stations[arrow.to_station].rings[0] &&
-      this.board.stations[arrow.to_station].rings[1] &&
-      this.board.stations[arrow.to_station].rings[1].color === color
-    ) {
-      return true
-    } else if (
-      !this.board.stations[arrow.to_station].base_post &&
-      !this.board.stations[arrow.to_station].rings[0] &&
-      !this.board.stations[arrow.to_station].rings[1] &&
-      this.board.stations[arrow.to_station].rings[2] &&
-      this.board.stations[arrow.to_station].rings[2].color === color
-    ) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-
 
   /**
    * Check to see if the game has a winner

@@ -65,12 +65,12 @@ class GameState {
      */
     possible_moves(color) {
         return [].concat(
-            this.possible_ring_moves(color),
+            //this.possible_ring_moves(color),
             //this.possible_base_post_moves(color),
             //this.possible_blocker_moves(color),
-            //this.possible_blocker_remove_moves(color),
+            this.possible_blocker_remove_moves(color),
             this.possible_arrow_place_moves(),
-            this.possible_arrow_reverse_moves(),
+            //this.possible_arrow_reverse_moves(),
             //this.possible_arrow_remove_moves(color),
         )
     }
@@ -123,24 +123,18 @@ class GameState {
      */
     possible_base_post_moves(color) {
         let possible_base_post_moves = []
-        let supported_bp_stations = []
-        Object.keys(this.board.stations).filter(
-            station_id => this.board.stations[station_id].base_post == null
-        ).forEach( station_id => {
-            let reachable_stations_after_bp_move =
-                pa.reachable_stations(
-                    color, this.board, this, station_id);
-            if (reachable_stations_after_bp_move.length > 0) {
-                supported_bp_stations.push(station_id);
-            }
-        });
-        supported_bp_stations.forEach( station => {
+  
+        let supported_bp_stations = Object.keys(this.board.stations).filter(
+            station_id => this.can_move_base_post(this.board.stations[station_id], color)
+        )
+
+        supported_bp_stations.forEach( station_id => {
             possible_base_post_moves.push(
                 new Move({
                     move_type: 'replace',
                     piece_to_add: new BasePost(
                         color,
-                        station)
+                        this.board.stations[station_id])
                     })
                 )
             });
@@ -247,7 +241,27 @@ class GameState {
     }
 
     possible_arrow_remove_moves(color) {
-        return [];
+        let possible_arrow_remove_moves = [];
+        Object.keys(this.board.stations).forEach( station_id => {
+            if (this.occupies_high_point(color, station_id)) {
+                Object.keys(this.board.stations[station_id].slots).forEach( to_station => {
+                    Object.keys(this.board.stations[station_id].slots[to_station]).forEach( channel => {
+                        if (this.board.stations[station_id].slots[to_station][channel].contains !== null
+                            && this.board.stations[station_id].slots[to_station][channel].contains.constructor.name === 'Arrow'
+                            && this.board.stations[station_id].slots[to_station][channel].contains.to_station === station_id) {
+                                possible_arrow_remove_moves.push(
+                                    new Move({
+                                        move_type: 'remove',
+                                        piece_to_remove: this.board.stations[station_id].slots[to_station][channel].contains
+                                    })
+                                )
+                        }
+                    })
+                })
+            }
+        });
+
+        return possible_arrow_remove_moves;
     }
 
     // Evaluation metrics
@@ -348,7 +362,7 @@ class GameState {
      * Apply a move to the current game state
      * @param {Move} param0 
      */
-    apply_move({move_type, piece_to_add, piece_to_remove}) {
+    apply_move({move_type, piece_to_add, piece_to_remove}) { 
         if (move_type === "place") {
             if (piece_to_add.constructor.name === "Arrow") {
                 this.place_arrow(piece_to_add);
@@ -359,6 +373,7 @@ class GameState {
             if (piece_to_remove.constructor.name === "Arrow") {
                 this.remove_arrow(piece_to_remove);
             } else if (piece_to_remove.constructor.name === "Blocker") {
+                piece_to_remove.to_move = true;
                 this.remove_blocker(piece_to_remove);
             }
         } else if (move_type === "replace") {
@@ -393,7 +408,7 @@ class GameState {
             slot: arrow.slot, 
             is_preview: false});
         arrow.slot.add_arrow(placed_arrow, this.board);
-        this.arrows.push(arrow);
+        this.arrows.push(placed_arrow);
     }
 
     /**
@@ -419,6 +434,83 @@ class GameState {
     }
 
     /**
+     * Check if a player color occupies the
+     * high point on an arrow destination station
+     * 
+     * @param {String} color 
+     * @param {Arrow} arrow 
+     * @returns {boolean}
+     */
+    occupies_high_point(color, station) {
+        if (
+            this.board.stations[station].base_post &&
+            this.board.stations[station].base_post.color === color) {
+            return true;
+        } else if (
+            !this.board.stations[station].base_post &&
+            this.board.stations[station].rings[0] && 
+            this.board.stations[station].rings[0].color === color) {
+            return true
+        } else if (
+            !this.board.stations[station].base_post &&
+            !this.board.stations[station].rings[0] &&
+            this.board.stations[station].rings[1] &&
+            this.board.stations[station].rings[1].color === color
+        ) {
+        return true
+        } else if (
+            !this.board.stations[station].base_post &&
+            !this.board.stations[station].rings[0] &&
+            !this.board.stations[station].rings[1] &&
+            this.board.stations[station].rings[2] &&
+            this.board.stations[station].rings[2].color === color
+        ) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+
+    /**
+     * Determine whether a base post can
+     * be moved to a given station
+     * 
+     * @param {Station} station 
+     * @param {String} color 
+     * @returns {boolean}
+     */
+    can_move_base_post(station, color) {
+        return (!station.base_post &&
+                station.number !== '0,0' &&
+                this.new_path_has_rings(station.number, color));
+    }
+
+    /**
+     * Check to see if a potential new path has rings
+     * to support base post move
+     * 
+     * @param {String} station_ind 
+     * @param {String} color 
+     * @returns {boolean}
+     */
+    new_path_has_rings(station_ind, color) {
+        let reachable_stations = pa.reachable_stations(
+        color, this.board, this, station_ind)
+        let has_remaining_rings = false;
+        reachable_stations.forEach(stat_ind => {
+        let stat_rings = this.board.stations[stat_ind].rings.filter(
+            r => r && r.color === color
+        );
+        if (stat_rings.length > 0) {
+            has_remaining_rings = true;
+            return;
+        }
+        });
+        return has_remaining_rings;
+    }
+
+    /**
      * Remove an arrow from the board
      * 
      * @param {Arrow} arrow 
@@ -428,6 +520,7 @@ class GameState {
         this.arrows = this.arrows.filter( 
             a => a !== arrow 
         );
+
         this.reevaluate_ring_support();
     }
 
@@ -477,16 +570,16 @@ class GameState {
     * @param {Ring} ring 
     */
     remove_ring(ring) {
-    let station_id = ring.station.number;
-    this.rings = this.rings.filter(r => r !== ring);
-    this.board.stations[station_id].rings = this.board.stations[station_id].rings.map(
-        r => {
-                if(r === ring) {
-                return null;
-                } else {
-                return r;
+        let station_id = ring.station.number;
+        this.rings = this.rings.filter(r => r !== ring);
+        this.board.stations[station_id].rings = this.board.stations[station_id].rings.map(
+            r => {
+                    if(r === ring) {
+                    return null;
+                    } else {
+                    return r;
+                    }
                 }
-            }
         );
     }
 
@@ -513,7 +606,7 @@ class GameState {
         new Blocker({
             color: blocker.color, 
             slot: blocker.slot, 
-            is_previw: false
+            is_preview: false
         });
         blocker.slot.add_blocker(placed_blocker);
         this.blockers.push(placed_blocker);

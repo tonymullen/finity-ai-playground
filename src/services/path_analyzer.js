@@ -75,6 +75,8 @@ class PathAnalyzer {
 
                     matching_arrows.forEach(out_arrow => {
                         let newpath = possible_path.slice(); // copy array
+                        // Disallow passing through center station, but
+                        // allow ending on center station
                         if (out_arrow.to_station !== '0,0' ||
                             remaining_pattern.length === 1) {
                             newpath.push(out_arrow.to_station);
