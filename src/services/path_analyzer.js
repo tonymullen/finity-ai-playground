@@ -74,8 +74,11 @@ class PathAnalyzer {
                     let matching_arrows = last_station.out_arrows(remaining_pattern[0]);
 
                     matching_arrows.forEach(out_arrow => {
-                        let newpath = possible_path.slice();
-                        newpath.push(out_arrow.to_station);
+                        let newpath = possible_path.slice(); // copy array
+                        if (out_arrow.to_station !== '0,0' ||
+                            remaining_pattern.length === 1) {
+                            newpath.push(out_arrow.to_station);
+                        }
                         possible_paths.push(newpath);
                     });
                 }

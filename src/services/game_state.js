@@ -65,7 +65,7 @@ class GameState {
      */
     possible_moves(color) {
         return [].concat(
-            //this.possible_ring_moves(color),
+            this.possible_ring_moves(color),
             //this.possible_base_post_moves(color),
             //this.possible_blocker_moves(color),
             //this.possible_blocker_remove_moves(color),

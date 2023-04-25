@@ -366,6 +366,7 @@ function set_up_slot_relations() {
     slots[35].interferes_with = [38, 39];
     slots[36].interferes_with = [5, 6];
     slots[38].interferes_with = [35, 39];
+    slots[39].interferes_with = [35, 38];
     slots[44].interferes_with = [47, 48];
     slots[45].interferes_with = [8, 9];
     slots[47].interferes_with = [44, 48];
