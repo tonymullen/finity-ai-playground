@@ -1,9 +1,5 @@
 import BasePost from './game_pieces/base_post';
-// import Arrow from './game_pieces/arrow';
-// import Blocker from './game_pieces/blocker';
 import Ring from './game_pieces/ring';
-// import Board from './board';
-// import GameState from './game_state';
 import { game_state } from './game_state';
 import Move from './move';
 import { pathAnalyzer } from './path_analyzer';
@@ -14,10 +10,6 @@ import { player_agent_moves } from './player_agents';
  */
 class GameManager {
   constructor(app) {
-    // this.app = app;
-    
-    //this.players = this.get_players();
-    // this.board = new Board(this.player_count());
     this.game_state = game_state;
     this.board = this.game_state.board;
     this.players = this.game_state.players;
@@ -69,24 +61,6 @@ class GameManager {
   }
 
   /**
-   * Reset the board for a particular number of players
-   * @param {Number} num 
-   */
-  // reset_board(num) {
-  //   if (num !== this.board.num_players) {
-  //     this.board.setup_board(num);
-  //     this.reset_game_state();
-  //     this.turn_index = 0;
-  //     this.player_moving = null;
-  //     this.move_in_progress = null;
-  //     this.move_to_finalize = null;
-  //     this.piece_to_move = null;
-  //     this.needs_redraw = true;
-  //     this.redraw();
-  //   }
-  // }
-
-  /**
    * Reset the game state
    */
   reset_game_state(players) { 
@@ -106,15 +80,17 @@ class GameManager {
    * @param {String} color 
    */
   toggle_player(color) {
+    this.game_state.toggle_player(color);
     // Ensure that there are at least 2 players
-    if (!this.players[color] || this.player_count()  > 2) {
-      this.players[color] = !this.players[color];
+    // if (!this.players[color] || this.player_count()  > 2) {
+    //   this.players[color] = !this.players[color];
       
-      window.localStorage.setItem("players", JSON.stringify(this.players));
-      // this.reset_board(this.player_count());
-      this.reset_game_state(Object.keys(this.players).filter( p => this.players[p]));
-      this.redraw();
-    }
+    //   window.localStorage.setItem("players", JSON.stringify(this.players));
+    //   // this.reset_board(this.player_count());
+    //   this.reset_game_state(Object.keys(this.players).filter( p => this.players[p]));
+    //   this.redraw();
+    // }
+    this.redraw()
   }
 
   /**
@@ -164,7 +140,9 @@ class GameManager {
         this.turn_index = (this.turn_index + 1) % this.player_count();
       }
     }
-    this.handle_player_agent_move(this.players_to_agents[Object.keys(this.players)[this.turn_index]]);
+    this.handle_player_agent_move(
+      Object.keys(this.players)[this.turn_index],
+      this.players_to_agents[Object.keys(this.players)[this.turn_index]]);
   }
 
   /**
@@ -181,6 +159,7 @@ class GameManager {
   }
 
   /**
+   * Initiate a move
    * 
    * @param {String} player 
    * @param {String} move_type 
@@ -222,11 +201,13 @@ class GameManager {
    * 
    * @param {String}
    */
-  async handle_player_agent_move(player_agent) {
-    let move = await player_agent_moves[player_agent]();
+  async handle_player_agent_move(player_moving, player_agent) {
+    //console.log(player_agent)
+    let move = await player_agent_moves[player_agent](player_moving, this.game_state);
     // move is instantiated only for non-local-human agents
     // local-human agents' moves are handled interactively
     if (move) {
+      this.game_state.apply_move(move);
       this.finalize_move();
     }
   }
@@ -380,11 +361,11 @@ class GameManager {
       let arrow_color = this.move_in_progress === 'b-arrow' ? 'b' : 'w';
       this.board.slots.forEach( slot => {
               if (slot.contains === null && !slot.blocked) {
-                let from_stations = Object.keys(slot.to_points)
+                let from_stations = Object.keys(slot.to_points);
                 from_stations.forEach(to_point => {
                   if (Math.abs(mouse_x - slot.to_points[to_point][0]) < SMALL_MOUSEOVER && 
                     Math.abs(mouse_y - slot.to_points[to_point][1]) < SMALL_MOUSEOVER) {
-                      if (this.not_redundant(slot, to_point, arrow_color)) {
+                      if (this.game_state.not_redundant(slot, to_point, arrow_color)) {
                         preview = slot.preview_arrows[to_point]; 
                         preview.color = arrow_color;
                       }
@@ -407,7 +388,7 @@ class GameManager {
       this.game_state.arrows.forEach(arrow => {
         if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER && 
               Math.abs(mouse_y - arrow.slot.midpoint[1]) < SMALL_MOUSEOVER) {
-                if (this.not_redundant(arrow.slot, arrow.from_station, arrow.color)) {
+                if (this.game_state.not_redundant(arrow.slot, arrow.from_station, arrow.color)) {
                   this.piece_to_move = arrow;
                   arrow.to_move = true;
                   preview = arrow.reverse();
@@ -513,27 +494,7 @@ class GameManager {
     }
   }
 
-  /**
-   * Check whether an arrow is redundant
-   * i.e. slot has neighbor with same color arrow and same destination
-   * 
-   * @param {Slot} slot 
-   * @param {String} to_point 
-   * @param {String} color 
-   * @returns {boolean}
-   */
-  not_redundant(slot, to_point, color) {
-    let not_redundant = true;
-    slot.neighbors.forEach(ind => {
-      if (this.game_state.board.slots[ind].contains &&
-         this.game_state.board.slots[ind].contains.to_station &&
-         this.game_state.board.slots[ind].contains.to_station === to_point &&
-         this.game_state.board.slots[ind].contains.color === color) {
-          not_redundant = false;
-         }
-    });
-    return not_redundant;
-  }
+
 
   /**
    * Check to see if the game has a winner

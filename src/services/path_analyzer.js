@@ -62,8 +62,7 @@ class PathAnalyzer {
         });
     }
 
-    // Generate possible paths of stations, then 
-    // filter according to 
+    // Generate possible paths of stations based on arrow sequences only
     generate_raw_paths(possible_paths, remaining_pattern, board) {
         if (remaining_pattern.length === 0) {
             return possible_paths;

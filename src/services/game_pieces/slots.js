@@ -418,7 +418,7 @@ function set_up_slot_relations() {
     slots[34].neighbors = [33, 35];
     slots[35].neighbors = [33, 34];
     slots[36].neighbors = [37, 38];
-    slots[37].neighbors = [36, 36];
+    slots[37].neighbors = [36, 38];
     slots[38].neighbors = [36, 37];
     slots[39].neighbors = [40, 41];
     slots[40].neighbors = [39, 41];
@@ -433,7 +433,7 @@ function set_up_slot_relations() {
     slots[49].neighbors = [48, 50];
     slots[50].neighbors = [48, 49];
     slots[51].neighbors = [52, 53];
-    slots[52].neighbors = [52, 53];
+    slots[52].neighbors = [51, 53];
     slots[53].neighbors = [51, 52];
     slots[54].neighbors = [55, 56];
     slots[55].neighbors = [54, 56];

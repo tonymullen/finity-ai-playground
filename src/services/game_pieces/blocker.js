@@ -14,8 +14,8 @@ class Blocker {
     if (!slot) {
       this.from_station = from_station;
       this.to_station = to_station;
-      this.slot = station_slots[from_station.number][to_station.number][slot_loc];
-      station_slots[from_station.number][to_station.number][slot_loc].add_blocker(this);
+      this.slot = station_slots[from_station][to_station][slot_loc];
+      station_slots[from_station][to_station][slot_loc].add_blocker(this);
     } else {
       this.from_station = Object.keys(slot.stations)[0];
       this.to_station = Object.keys(slot.stations)[1];

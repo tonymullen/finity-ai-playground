@@ -1,5 +1,3 @@
-import { game_state as gs } from '../../game_state';
-
 const agent = {
     "label": "ai_random",
     "description": "A simple AI that produces a randomly selected legal move",
@@ -8,21 +6,21 @@ const agent = {
 }
 
 /**
- * Generate a move based on existing game state
- * and previous move
+ * Generate a move for color based on existing game state
+ * 
+ * @param {Color} color 
  * @param {GameState} game_state 
- * @param {Move} last_move 
  * @returns {Move}
  */
-function move(game_state, last_move) {
-    const move = new Promise((resolve, reject) => {
-      let arrows = gs.arrows;
-      console.log(arrows);
-
+function move(color, game_state) {
+    const move = new Promise(resolve => {
+      let possible_moves = game_state.possible_moves(color);
+      // console.log(possible_moves);
+      let random_index = Math.floor(Math.random()*possible_moves.length)
+      let random_move = possible_moves[random_index];
         setTimeout(() => {
-          resolve("My Random AI move", arrows);
-        }, 2000);
-
+          resolve(random_move);
+        }, 750);
       });
     return move;
 }
