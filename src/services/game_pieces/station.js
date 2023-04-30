@@ -1,7 +1,7 @@
-import { station_slots } from './slots';
+//import { station_slots } from './slots';
 
 class Station {
-  constructor(number, center, pos, size) {
+  constructor(number, center, pos, size, station_slots) {
     this.number = number;
     this.center = center;
     this.x = pos[0];
@@ -35,6 +35,23 @@ class Station {
       return 'm';
     } else if (!this.rings[2]) {
       return 'l';
+    }
+  }
+
+  /**
+   * Which color controls the station?
+   * 
+   * @returns {(String|null)}
+   */
+  controlled_by() {
+    if (this.rings[0]) {
+      return this.rings[0].color;
+    } else if (this.rings[1]) {
+      return this.rings[1].color;
+    } else if (this.rings[2]) {
+      return this.rings[2].color;
+    } else {
+      return null;
     }
   }
 

@@ -18,13 +18,14 @@ const PlayerPanel = ({ player, gm }) => {
     <div  id={ "player_"+player } className="player-panel" to-play="false">
       <Form.Select 
         aria-label="select player agent"
+        defaultValue={ gm.players_to_agents[player] }
         onChange={(e)=>{
           gm.set_player_agent(player, e.target.value);
         }}>
         <option value="human-loc">Local Human</option>
         <option disabled value="human-rem">Remote Human</option>
         <option value="ai-random">Random Moves AI</option>
-        <option disabled value="ai-easy">Easy AI</option>
+        <option value="ai-easy">Easy AI</option>
         <option disabled value="ai-hard">Hard AI</option>
         <option disabled value="ai-custom">Custom AI</option>
       </Form.Select>

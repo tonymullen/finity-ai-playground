@@ -1,12 +1,11 @@
-import { slots, station_slots } from './slots';
-
 class Blocker {
   constructor({
     color, 
     from_station, 
     to_station, 
     slot_loc, 
-    slot, 
+    slot,
+    station_slots,
     is_preview
   }={}) {
     this.color = color;
@@ -27,12 +26,5 @@ class Blocker {
     this.to_move = false;
   }
 }
-
-// Set up previews
-slots.forEach((slot) => {
-  slot.preview_blocker = new Blocker({
-    slot, 
-    is_preview: true});
-});
   
 export default Blocker;

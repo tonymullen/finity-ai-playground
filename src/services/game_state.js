@@ -4,13 +4,20 @@ import Ring from './game_pieces/ring';
 import BasePost from './game_pieces/base_post';
 import Arrow from './game_pieces/arrow';
 import Move from './move';
-import { pathAnalyzer as pa } from './path_analyzer';
+import Slots from './game_pieces/slots';
+import PathAnalyzer from './path_analyzer';
 
 
 class GameState {
     constructor() {
+        // The gs_id attribute is an id value to identify individual objects. 
+        // It is used to distinguish the main game state from virtual game states
+        // created by the AI to test moves. Mainly for debugging. 
+        this.gs_id = String(Math.floor(Math.random()*90000) + 10000); 
+        this.slots = new Slots(this.gs_id);
+        this.station_slots = this.slots.station_slots;
         this.players = this.get_players();
-        this.board = new Board(this.player_count());
+        this.board = new Board(this.player_count(), this.slots, this.gs_id);
         this.path_pattern = this.generate_path_pattern();
         this.arrows = [];
         this.rings = this.set_up_rings();
@@ -18,19 +25,43 @@ class GameState {
         this.base_posts = this.set_up_base_posts();
         this.winners = [];
         this.play_status = null;
+        // this.move_history = [];
+        this.turn_index = 0;
+        this.pa = new PathAnalyzer();
     }
 
     duplicate() {
-        return new GameState({
-            board: this.board.duplicate(),
-            path_pattern: this.path_pattern,
-            arrows: this.duplicate_arrows(),
-            blockers: this.duplicate_blockers(),
-            base_posts: this.duplicate_base_posts(),
-            winners: this.duplicate_winners(),
-            play_status: this.play_status,
-            move_history: this.duplicate_move_history(),
-        })
+        let dup_gs = new GameState();
+        dup_gs.path_pattern = this.path_pattern;
+        dup_gs.winners = this.winners.slice();
+        dup_gs.play_status = this.play_status;
+        // dup_gs.move_history = this.move_history.slice();
+
+        this.arrows.forEach(
+            arrow => { 
+                let new_arrow = new Arrow({
+                    color: arrow.color, 
+                    from_station: arrow.from_station,
+                    to_station: arrow.to_station,
+                    slot: this.slots.slots[arrow.slot.id],
+                    is_preview: false});
+                dup_gs.place_arrow(new_arrow);
+            });
+        
+        this.blockers.forEach(
+            blocker => { dup_gs.place_blocker(blocker) });
+        
+        this.base_posts.forEach(
+            base_post => {
+                let dup_base_post = new BasePost(
+                        base_post.color,
+                        dup_gs.board.stations[
+                            base_post.station.number
+                        ]);
+                dup_gs.place_base_post(dup_base_post)
+            }
+        );
+        return dup_gs;
     }
 
     reset(players) {
@@ -43,6 +74,7 @@ class GameState {
         this.blockers = this.set_up_blockers();
         this.winners = [];
         this.play_status = null;
+        this.turn_index = 0;
     }
 
     /**
@@ -51,7 +83,7 @@ class GameState {
      */
     reset_board(num) {
         if (num !== this.board.num_players) {
-            this.board.setup_board(num);
+            this.board.setup_board(num, this.slots);
         }
     }
 
@@ -65,13 +97,13 @@ class GameState {
      */
     possible_moves(color) {
         return [].concat(
-            //this.possible_ring_moves(color),
-            //this.possible_base_post_moves(color),
-            //this.possible_blocker_moves(color),
+            this.possible_ring_moves(color),
+            this.possible_base_post_moves(color),
+            this.possible_blocker_moves(color),
             this.possible_blocker_remove_moves(color),
             this.possible_arrow_place_moves(),
-            //this.possible_arrow_reverse_moves(),
-            //this.possible_arrow_remove_moves(color),
+            this.possible_arrow_reverse_moves(),
+            this.possible_arrow_remove_moves(color),
         )
     }
 
@@ -84,7 +116,7 @@ class GameState {
      */
     possible_ring_moves(color) {
         let possible_ring_moves = [];
-        let reachable_stations = pa.reachable_stations(
+        let reachable_stations = this.pa.reachable_stations(
             color,
             this.board,
             this
@@ -159,6 +191,7 @@ class GameState {
                                 piece_to_add: new Blocker({
                                     color,
                                     slot,
+                                    station_slots: this.station_slots,
                                     is_preview: true
                                 }),
                                 piece_to_remove: old_blocker
@@ -270,8 +303,16 @@ class GameState {
      * @param {String} color 
      * @returns {number}
      */
-    longest_bridge_path(color) {
-
+    longest_bridge_path(color, game_state) {
+        let paths = this.pa.raw_paths(
+            color, game_state.board, game_state);
+        let longest_path = [];
+        paths.forEach( path => {
+            if (path.length > longest_path.length) {
+                longest_path = path;
+            }
+        });
+        return longest_path.length;
     }
 
     /**
@@ -279,8 +320,16 @@ class GameState {
      * @param {String} color 
      * @returns {number}
      */
-    longest_supported_path(color) {
-
+    longest_supported_path(color, game_state) {
+        let paths = this.pa.legal_paths(
+            color, game_state.board, game_state);
+        let longest_path = [];
+        paths.forEach( path => {
+            if (path.length > longest_path.length) {
+                longest_path = path;
+            }
+        });
+        return longest_path.length;
     }
 
     /**
@@ -288,26 +337,31 @@ class GameState {
      * @param {String} color 
      * @returns {number}
      */
-    number_of_reachable_stations(color) {
-
+    number_of_reachable_stations(color, game_state) {
+        let reachable_stations = this.pa.reachable_stations(
+            color, game_state.board, game_state);
+        return Object.keys(reachable_stations).length;
     }
 
     /**
-     * Number of reachable stations for a color
+     * Number of rings color
      * @param {String} color 
      * @returns {number}
      */
-    number_of_rings(color) {
-
+    number_of_rings(color, game_state) {
+        return game_state.rings.filter(
+            ring => ring.color === color).length;
     }
 
     /**
-     * Number of reachable stations for a color
+     * Number of controlled for a color
      * @param {String} color 
      * @returns {number}
      */
-    number_of_controlled_stations(color) {
-
+    number_of_controlled_stations(color, game_state) {
+        return Object.keys(game_state.board.stations).filter(
+            station_id => game_state.board.stations[station_id].controlled_by() === color
+                ).length;
     }
 
     /**
@@ -317,9 +371,37 @@ class GameState {
      * 
      * @param {String} color 
      */
-    average_strength_of_station_pairs(color) {
-
-    }
+    average_strength_of_station_pairs(color, game_state) {
+        let strength_sum = 0;
+        let num_pairs = 0;;
+        Object.keys(game_state.board.stations).filter(
+            station => game_state.board.stations[station].controlled_by() === color
+            ).forEach( station1 => { 
+                Object.keys(game_state.board.stations).filter(
+                    station => game_state.board.stations[station].controlled_by() === color
+                ).forEach( station2 => {
+                    let strength = 0;
+                    this.arrows.forEach( arrow => {
+                        if ((arrow.from_station === station1
+                             && arrow.to_station === station2) || 
+                            (arrow.from_station === station2
+                             && arrow.to_station === station1))
+                            {
+                                strength++
+                            }
+                    });
+                    if (strength > 0) {
+                        strength_sum += strength;
+                        num_pairs++;
+                    }
+                })
+            });
+        if (num_pairs === 0) {
+            return 0;
+        } else {
+            return strength_sum / num_pairs;
+        }
+    }  
 
     /**
      * Looks at all pairs of stations controlled by
@@ -362,7 +444,8 @@ class GameState {
      * Apply a move to the current game state
      * @param {Move} param0 
      */
-    apply_move({move_type, piece_to_add, piece_to_remove}) { 
+    apply_move(move) {
+        let {move_type, piece_to_add, piece_to_remove} = move;
         if (move_type === "place") {
             if (piece_to_add.constructor.name === "Arrow") {
                 this.place_arrow(piece_to_add);
@@ -392,23 +475,8 @@ class GameState {
                 this.place_base_post(piece_to_add);
             }
         }
-    }
-
-    /**
-     * Place an arrow on the board
-     * 
-     * @param {Arrow} arrow 
-     */
-    place_arrow(arrow){
-        let placed_arrow = 
-        new Arrow({
-            color: arrow.color, 
-            from_station: arrow.from_station,
-            to_station: arrow.to_station, 
-            slot: arrow.slot, 
-            is_preview: false});
-        arrow.slot.add_arrow(placed_arrow, this.board);
-        this.arrows.push(placed_arrow);
+        //this.move_history.push(move);
+        this.next_turn();
     }
 
     /**
@@ -495,7 +563,7 @@ class GameState {
      * @returns {boolean}
      */
     new_path_has_rings(station_ind, color) {
-        let reachable_stations = pa.reachable_stations(
+        let reachable_stations = this.pa.reachable_stations(
         color, this.board, this, station_ind)
         let has_remaining_rings = false;
         reachable_stations.forEach(stat_ind => {
@@ -508,20 +576,6 @@ class GameState {
         }
         });
         return has_remaining_rings;
-    }
-
-    /**
-     * Remove an arrow from the board
-     * 
-     * @param {Arrow} arrow 
-     */
-    remove_arrow(arrow) {
-        arrow.slot.remove_arrow(this.board);
-        this.arrows = this.arrows.filter( 
-            a => a !== arrow 
-        );
-
-        this.reevaluate_ring_support();
     }
 
     /**
@@ -564,6 +618,22 @@ class GameState {
         }
     }
 
+     /**
+     * Determine whether a ring can be placed
+     * on a station
+     * 
+     * @param {Station} station 
+     * @param {String} color 
+     * @returns {boolean}
+     */
+    can_place_ring(station, color) {
+        return ((station.rings.filter(ring => ring).length < 3) && 
+                (!station.base_post || station.base_post.color !== color) &&
+                this.pa.reachable_stations(
+                color, this.board, this
+                ).has(station.number));
+    }
+
     /**
     * Remove a ring from the board
     * 
@@ -589,11 +659,25 @@ class GameState {
      * @param {Blocker} blocker 
      */
     remove_blocker(blocker) {
-        blocker.slot.contains = null;
+        this.slots.slots[blocker.slot.id].remove_blocker();
         this.blockers = this.blockers.filter( 
             b => b.to_move === false 
         );
         blocker.to_move = false;
+    }
+
+    /**
+     * Remove an arrow from the board
+     * 
+     * @param {Arrow} arrow 
+     */
+    remove_arrow(arrow) {
+        this.slots.slots[arrow.slot.id].remove_arrow(this.board);
+        this.arrows = this.arrows.filter( 
+            a => a !== arrow 
+        );
+
+        this.reevaluate_ring_support();
     }
 
     /**
@@ -602,14 +686,34 @@ class GameState {
      * @param {Blocker} blocker 
      */
     place_blocker(blocker){
+
         let placed_blocker = 
         new Blocker({
             color: blocker.color, 
-            slot: blocker.slot, 
+            slot: this.slots.slots[blocker.slot.id],
+            station_slots: this.station_slots,
             is_preview: false
         });
-        blocker.slot.add_blocker(placed_blocker);
+
+        placed_blocker.slot.add_blocker(placed_blocker);
         this.blockers.push(placed_blocker);
+    }
+
+    /**
+     * Place an arrow on the board
+     * 
+     * @param {Arrow} arrow 
+     */
+    place_arrow(arrow){
+        let placed_arrow = 
+        new Arrow({
+            color: arrow.color, 
+            from_station: arrow.from_station,
+            to_station: arrow.to_station, 
+            slot: this.slots.slots[arrow.slot.id], 
+            is_preview: false});
+        placed_arrow.slot.add_arrow(placed_arrow, this.board);
+        this.arrows.push(placed_arrow);
     }
 
     /**
@@ -629,7 +733,7 @@ class GameState {
      * @param {String} color 
      */
     clear_orphans(color) {
-        let reachable_stations = pa.reachable_stations(
+        let reachable_stations = this.pa.reachable_stations(
         color, this.board, this);
         let rings = this.rings.filter(ring => ring.color === color);
         rings.forEach(ring => {
@@ -681,13 +785,15 @@ class GameState {
             color, 
             from_station: this.board.start_stations[ind],
             to_station: '0,0',
-            slot_loc: 'l'
+            slot_loc: 'l',
+            station_slots: this.station_slots,
         }));
         blockers.push(new Blocker({
             color,
             from_station: this.board.start_stations[ind],
             to_station: '0,0',        
-            slot_loc: 'r'
+            slot_loc: 'r',
+            station_slots: this.station_slots,
         }));
         });
         return blockers;
@@ -733,7 +839,7 @@ class GameState {
             'yellow': true,
             'purple': true,
             'red': true
-            })
+            });
         }
     }
 
@@ -758,6 +864,42 @@ class GameState {
      */
     player_count() {
         return Object.values(this.players).filter( p => p).length;
+    }
+
+    /**
+     * Sets the next turn index
+     */
+    next_turn() {
+        this.check_victory();
+        if (this.play_status === 'over') {
+            this.turn_index = -1;
+        } else {
+            this.turn_index = (this.turn_index + 1) % this.player_count();
+        // Play past (ignore) winners in >2 player games
+        while (this.winners.includes(Object.keys(this.players)[this.turn_index])) {
+            this.turn_index = (this.turn_index + 1) % this.player_count();
+            }
+        }
+    }
+
+    /**
+     * Check to see if the game has a winner
+     */
+    check_victory() {
+        this.player_colors().forEach(color => {
+        if (this.rings.filter(
+            ring => ring.color === color
+            ).length >= 7) {
+            if (this.pa.has_full_path(color, this.board, this)) {
+                if (!this.winners.includes(color)) {
+                this.winners.push(color);
+                }
+            }
+            }
+        });
+        if (this.winners.length === this.player_count()-1) {
+        this.play_status = 'over';
+        }
     }
 
 }

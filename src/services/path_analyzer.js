@@ -26,17 +26,23 @@ class PathAnalyzer {
         // station_ind is optional. default is legal paths
         // from current base station. If station_ind is passed,
         // then returns legal paths from that station
+        let paths = this.raw_paths(color, 
+            board, game_state, 
+            station_ind).filter(
+                this.has_enough_rings(board, color));
+        return paths;
+    }
+
+    raw_paths(color, board, game_state, station_ind) {
         let base_post_path = [];
         if (!station_ind) {
             base_post_path.push(this.base_post_station(color, game_state));
         } else {
             base_post_path.push(station_ind);
         }
-        let raw_paths = this.generate_raw_paths(
+        return this.generate_raw_paths(
             [base_post_path], game_state.path_pattern, board, game_state
             );
-        let paths = raw_paths.filter(this.has_enough_rings(board, color));
-        return paths;
     }
 
     has_enough_rings(board, color) {
@@ -101,5 +107,4 @@ class PathAnalyzer {
     }
   }
 
-const pathAnalyzer = new PathAnalyzer();
-export { pathAnalyzer };
+export default PathAnalyzer;

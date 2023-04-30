@@ -2,7 +2,6 @@ import BasePost from './game_pieces/base_post';
 import Ring from './game_pieces/ring';
 import { game_state } from './game_state';
 import Move from './move';
-import { pathAnalyzer } from './path_analyzer';
 import { player_agent_moves } from './player_agents';
 
 /**
@@ -11,22 +10,14 @@ import { player_agent_moves } from './player_agents';
 class GameManager {
   constructor(app) {
     this.game_state = game_state;
+    window.localStorage.setItem("main_gs_id", this.game_state.gs_id);
     this.board = this.game_state.board;
     this.players = this.game_state.players;
-    
-    // default player agent is local human
-    this.players_to_agents = {
-      'cyan': 'human-loc',
-      'yellow': 'human-loc',
-      'purple': 'human-loc',
-      'red': 'human-loc'
-    }
-    this.turn_index = 0;
+    this.players_to_agents = this.get_players_to_agents();
     this.player_moving = null;
     this.move_in_progress = null;
     this.move_to_finalize = null;
     this.piece_to_move = null;
-    this.needs_redraw = true;
   }
 
   /* 
@@ -60,12 +51,25 @@ class GameManager {
     }
   }
 
+  get_players_to_agents() {
+    let storedPlayersToAgents = window.localStorage.getItem("players_to_agents");
+    if (storedPlayersToAgents) {
+      return JSON.parse(storedPlayersToAgents);
+    } else {
+      return ({
+          'cyan': 'human-loc',
+          'yellow': 'human-loc',
+          'purple': 'human-loc',
+          'red': 'human-loc'
+        })
+    }
+  }
+
   /**
    * Reset the game state
    */
   reset_game_state(players) { 
     this.game_state.reset(players);
-    this.turn_index = 0;
     this.player_moving = null;
     this.move_in_progress = null;
     this.move_to_finalize = null;
@@ -81,24 +85,7 @@ class GameManager {
    */
   toggle_player(color) {
     this.game_state.toggle_player(color);
-    // Ensure that there are at least 2 players
-    // if (!this.players[color] || this.player_count()  > 2) {
-    //   this.players[color] = !this.players[color];
-      
-    //   window.localStorage.setItem("players", JSON.stringify(this.players));
-    //   // this.reset_board(this.player_count());
-    //   this.reset_game_state(Object.keys(this.players).filter( p => this.players[p]));
-    //   this.redraw();
-    // }
     this.redraw()
-  }
-
-  /**
-   * Return number of players
-   * @returns {number}
-   */
-  player_count() {
-    return Object.values(this.players).filter( p => p).length;
   }
 
   /**
@@ -108,6 +95,8 @@ class GameManager {
    */
   set_player_agent(color, agent) {
     this.players_to_agents[color] = agent;
+    window.localStorage.setItem("players_to_agents", JSON.stringify(this.players_to_agents));
+    this.initiate_agent_move();
     this.redraw();
   }
 
@@ -126,23 +115,10 @@ class GameManager {
     return this.players[color];
   }
 
-  /**
-   * Sets the next turn index
-   */
-  next_turn() {
-    this.check_victory();
-    if (this.game_state.play_status === 'over') {
-      this.turn_index = -1;
-    } else {
-      this.turn_index = (this.turn_index + 1) % this.player_count();
-      // Play past winners in >2 player games
-      while (this.game_state.winners.includes(Object.keys(this.players)[this.turn_index])) {
-        this.turn_index = (this.turn_index + 1) % this.player_count();
-      }
-    }
+  initiate_agent_move() {
     this.handle_player_agent_move(
-      Object.keys(this.players)[this.turn_index],
-      this.players_to_agents[Object.keys(this.players)[this.turn_index]]);
+      Object.keys(this.players)[this.game_state.turn_index],
+      this.players_to_agents[Object.keys(this.players)[this.game_state.turn_index]]);
   }
 
   /**
@@ -151,8 +127,8 @@ class GameManager {
    * @returns {(String|null)}
    */
   is_turn() {
-    if (this.turn_index >= 0) {
-      return this.player_colors()[this.turn_index];
+    if (this.game_state.turn_index >= 0) {
+      return this.player_colors()[this.game_state.turn_index];
     } else {
       return null;
     }
@@ -180,8 +156,8 @@ class GameManager {
     this.move_in_progress = false;
     this.move_to_finalize = null;
     this.piece_to_move = null;
-    this.next_turn();
     this.redraw();
+    this.initiate_agent_move();
   }
 
   /**
@@ -202,7 +178,6 @@ class GameManager {
    * @param {String}
    */
   async handle_player_agent_move(player_moving, player_agent) {
-    //console.log(player_agent)
     let move = await player_agent_moves[player_agent](player_moving, this.game_state);
     // move is instantiated only for non-local-human agents
     // local-human agents' moves are handled interactively
@@ -284,7 +259,7 @@ class GameManager {
         if (Math.abs(mouse_x - station.x) < LARGE_MOUSEOVER && 
             Math.abs(mouse_y - station.y) < LARGE_MOUSEOVER) {
               if (stat_key !== '0,0') {
-                if (this.can_place_ring(station, this.player_moving)) {
+                if (this.game_state.can_place_ring(station, this.player_moving)) {
                   let size = 's';
                   if (station.rings[0]) {
                     size = 'm';
@@ -403,41 +378,7 @@ class GameManager {
 
   // Move conditions
 
-  /**
-   * Determine whether a ring can be placed
-   * on a station
-   * 
-   * @param {Station} station 
-   * @param {String} color 
-   * @returns {boolean}
-   */
-  can_place_ring(station, color) {
-    return ((station.rings.filter(ring => ring).length < 3) && 
-            (!station.base_post || station.base_post.color !== color) &&
-            pathAnalyzer.reachable_stations(
-              color, this.board, this.game_state
-            ).has(station.number));
-  }
-
-  /**
-   * Check to see if the game has a winner
-   */
-  check_victory() {
-    this.player_colors().forEach(color => {
-      if (this.game_state.rings.filter(
-        ring => ring.color === color
-        ).length >= 7) {
-          if (pathAnalyzer.has_full_path(color, this.board, this.game_state)) {
-            if (!this.game_state.winners.includes(color)) {
-              this.game_state.winners.push(color);
-            }
-          }
-        }
-    });
-    if (this.game_state.winners.length === this.player_count()-1) {
-      this.game_state.play_status = 'over';
-    }
-  }
+ 
 
   // Getters and utilities
   /**

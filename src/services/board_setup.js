@@ -1,8 +1,12 @@
 import Station from './game_pieces/station';
-import { slots } from './game_pieces/slots';
 
 class BoardSetup {
-  constructor(count) {
+  constructor(count, slots, gs_id) {
+    
+    this.slots = slots.slots;
+    this.station_slots = slots.station_slots;
+    this.gs_id = gs_id;
+
     this.station_size = [200, 200];
     if (count === 2) {
       this.setup = this.twoPlayerSetup();
@@ -15,10 +19,12 @@ class BoardSetup {
     this.stations = this.set_up_stations(
       this.station_numbers,
       this.station_positions(),
-      this.station_size);
+      this.station_size,
+      this.station_slots,
+      );
     
     this.set_up_slots(this.stations);
-    this.slots = slots;
+    
   }
 
   twoPlayerSetup() {
@@ -66,10 +72,10 @@ class BoardSetup {
     });
   }
 
-  set_up_stations(station_numbers, station_positions, size){
-    let stations = {"0,0": new Station("0,0", true, station_positions["0,0"], size)};
+  set_up_stations(station_numbers, station_positions, size, station_slots){
+    let stations = {"0,0": new Station("0,0", true, station_positions["0,0"], size, station_slots)};
     station_numbers.forEach(stat => {
-      stations[stat] = new Station(stat, false, station_positions[stat], size)
+      stations[stat] = new Station(stat, false, station_positions[stat], size, station_slots)
     });
     return stations;
   }
