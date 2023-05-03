@@ -37,7 +37,7 @@ function move(color, game_state) {
                 
         setTimeout(() => {
           resolve(best_move);
-        }, 2000);
+        }, 200);
       });
     return move;
 }
@@ -57,31 +57,31 @@ function evaluate_game_state(color, game_state) {
   let own_longest_bridge_path = game_state.longest_bridge_path(color, game_state);
   let own_longest_supported_path = game_state.longest_supported_path(color, game_state);
   let own_number_of_reachable_stations = game_state.number_of_reachable_stations(color, game_state);
-  // let own_number_of_rings = game_state.number_of_rings(color, game_state);
-  // let own_number_of_controlled_stations = game_state.number_of_controlled_stations(color, game_state);
+  let own_number_of_rings = game_state.number_of_rings(color, game_state);
+  let own_number_of_controlled_stations = game_state.number_of_controlled_stations(color, game_state);
   // let own_average_strength_of_station_pairs = game_state.average_strength_of_station_pairs(color, game_state);
 
   let opponents_avg_longest_bridge_path = 0;
   let opponents_avg_longest_supported_path = 0;
   let opponents_avg_number_of_reachable_stations = 0;
-  // let opponents_avg_number_of_rings = 0;
-  // let opponents_avg_number_of_controlled_stations = 0;
+  let opponents_avg_number_of_rings = 0;
+  let opponents_avg_number_of_controlled_stations = 0;
   // let opponents_avg_average_strength_of_station_pairs = 0;
 
   game_state.player_colors().filter(c => c !== color).forEach(opponent_color => {
     opponents_avg_longest_bridge_path += game_state.longest_bridge_path(opponent_color, game_state);
     opponents_avg_longest_supported_path += game_state.longest_supported_path(opponent_color, game_state);
     opponents_avg_number_of_reachable_stations += game_state.number_of_reachable_stations(opponent_color, game_state);
-    // opponents_avg_number_of_rings += game_state.number_of_rings(opponent_color, game_state);
-    // opponents_avg_number_of_controlled_stations += game_state.number_of_controlled_stations(opponent_color, game_state);
+    opponents_avg_number_of_rings += game_state.number_of_rings(opponent_color, game_state);
+    opponents_avg_number_of_controlled_stations += game_state.number_of_controlled_stations(opponent_color, game_state);
     // opponents_avg_average_strength_of_station_pairs += game_state.average_strength_of_station_pairs(opponent_color, game_state);
   });
 
   opponents_avg_longest_bridge_path /= game_state.player_colors().length - 1;
   opponents_avg_longest_supported_path /= game_state.player_colors().length - 1;
   opponents_avg_number_of_reachable_stations /= game_state.player_colors().length - 1;
-  // opponents_avg_number_of_rings /= game_state.player_colors().length - 1;
-  // opponents_avg_number_of_controlled_stations /= game_state.player_colors().length - 1;
+  opponents_avg_number_of_rings /= game_state.player_colors().length - 1;
+  opponents_avg_number_of_controlled_stations /= game_state.player_colors().length - 1;
   // opponents_avg_average_strength_of_station_pairs /= game_state.player_colors().length - 1;
 
   let longest_bridge_path_ratio = 
@@ -90,25 +90,25 @@ function evaluate_game_state(color, game_state) {
      own_longest_supported_path - opponents_avg_longest_supported_path;
   let number_of_reachable_stations_ratio = 
     own_number_of_reachable_stations - opponents_avg_number_of_reachable_stations;
-  // let number_of_rings_ratio = 
-  //   own_number_of_rings - opponents_avg_number_of_rings;
-  // let number_of_controlled_stations_ratio = 
-  //   own_number_of_controlled_stations - opponents_avg_number_of_controlled_stations;
+  let number_of_rings_ratio = 
+    own_number_of_rings - opponents_avg_number_of_rings;
+  let number_of_controlled_stations_ratio = 
+    own_number_of_controlled_stations - opponents_avg_number_of_controlled_stations;
   // let average_strength_of_station_pairs_ratio = 
   //   own_average_strength_of_station_pairs - opponents_avg_average_strength_of_station_pairs;
 
   let bridge_path_weight = 1;
   let supported_path_weight = 2;
   let reachable_stations_weight = 1.5;
-  let rings_weight = 0.01;
+  let rings_weight = 1;
   let controlled_stations_weight = 0.01;
   let strength_of_station_pairs_weight = 0.01;
 
   let evaluation = longest_bridge_path_ratio * bridge_path_weight 
                   + longest_supported_path_ratio * supported_path_weight 
-                  +  number_of_reachable_stations_ratio * reachable_stations_weight
-  //                +  number_of_rings_ratio * rings_weight
-  //                +  number_of_controlled_stations_ratio * controlled_stations_weight
+                  + number_of_reachable_stations_ratio * reachable_stations_weight
+                  + number_of_rings_ratio * rings_weight
+                  +  number_of_controlled_stations_ratio * controlled_stations_weight
   //                + average_strength_of_station_pairs_ratio * strength_of_station_pairs_weight;
 
   //let evaluation = longest_bridge_path_ratio;

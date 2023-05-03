@@ -8,7 +8,7 @@ import { player_agent_moves } from './player_agents';
  * Game manager class
  */
 class GameManager {
-  constructor(app) {
+  constructor() {
     this.game_state = game_state;
     window.localStorage.setItem("main_gs_id", this.game_state.gs_id);
     this.board = this.game_state.board;

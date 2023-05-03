@@ -25,7 +25,7 @@ class GameState {
         this.base_posts = this.set_up_base_posts();
         this.winners = [];
         this.play_status = null;
-        // this.move_history = [];
+        this.move_history = [];
         this.turn_index = 0;
         this.pa = new PathAnalyzer();
     }
@@ -35,7 +35,7 @@ class GameState {
         dup_gs.path_pattern = this.path_pattern;
         dup_gs.winners = this.winners.slice();
         dup_gs.play_status = this.play_status;
-        // dup_gs.move_history = this.move_history.slice();
+        dup_gs.move_history = this.move_history.slice();
 
         this.arrows.forEach(
             arrow => { 
@@ -139,8 +139,9 @@ class GameState {
                     piece_to_add: new Ring(
                         color,
                         this.board.stations[station_id].topmost_opening(),
-                        this.board.stations[station_id]
-                    )
+                        this.board.stations[station_id],
+                    ),
+                    piece_to_remove: null,
                 })
             );
         });
@@ -166,7 +167,8 @@ class GameState {
                     move_type: 'replace',
                     piece_to_add: new BasePost(
                         color,
-                        this.board.stations[station_id])
+                        this.board.stations[station_id]),
+                    piece_to_remove: null
                     })
                 )
             });
@@ -181,7 +183,8 @@ class GameState {
     possible_blocker_moves(color) {
         let possible_blocker_moves = [];
         let possible_blockers = this.blockers.filter( b => b.color === color);
-        this.board.slots.filter(slot => slot.contains === null)
+        this.board.slots.filter(slot => slot.contains === null 
+                                        && this.stations_are_valid(Object.keys(slot.stations)))
             .forEach(slot => {
                 possible_blockers.forEach( old_blocker => 
                     {   
@@ -203,6 +206,16 @@ class GameState {
         return possible_blocker_moves;
     }
 
+    stations_are_valid(list_of_stations) {
+        let valid = true;
+        list_of_stations.forEach( station_id => {
+            if (!Object.keys(this.board.stations).includes(station_id)) {
+                valid = false;
+            }
+        });
+        return valid;
+    }
+
     possible_blocker_remove_moves(color) {
         let possible_blocker_remove_moves = [];
         if (this.arrows.length > 20) {
@@ -210,7 +223,8 @@ class GameState {
                 possible_blocker_remove_moves.push(
                     new Move({
                         move_type: 'remove',
-                        piece_to_remove: blocker
+                        piece_to_remove: blocker,
+                        piece_to_add: null,
                     })
                 )
             })
@@ -222,28 +236,31 @@ class GameState {
         let possible_arrow_place_moves = [];
         Object.keys(this.board.stations).forEach( station_id => { 
             Object.keys(this.board.stations[station_id].slots).forEach( to_station => {
-                Object.keys(this.board.stations[station_id].slots[to_station]).forEach( channel => {
-                    if (this.board.stations[station_id].slots[to_station][channel].contains === null
-                        && this.board.stations[station_id].slots[to_station][channel].blocked === false) {
-                        ['b','w'].forEach( arrow_color => {
-                            if (this.not_redundant(
-                                this.board.stations[station_id].slots[to_station][channel], 
-                                to_station, arrow_color)) {
-                                possible_arrow_place_moves.push(
-                                    new Move({
-                                        move_type: 'place',
-                                        piece_to_add: new Arrow({
-                                            color: arrow_color,
-                                            from_station: station_id,
-                                            to_station,
-                                            slot: this.board.stations[station_id].slots[to_station][channel]
-                                        }),
-                                    })
-                                )
-                            }
-                        })
-                    }
-                })
+                if (Object.keys(this.board.stations).includes(to_station)) {
+                    Object.keys(this.board.stations[station_id].slots[to_station]).forEach( channel => {
+                        if (this.board.stations[station_id].slots[to_station][channel].contains === null
+                            && this.board.stations[station_id].slots[to_station][channel].blocked === false) {
+                            ['b','w'].forEach( arrow_color => {
+                                if (this.not_redundant(
+                                    this.board.stations[station_id].slots[to_station][channel], 
+                                    to_station, arrow_color)) {
+                                    possible_arrow_place_moves.push(
+                                        new Move({
+                                            move_type: 'place',
+                                            piece_to_add: new Arrow({
+                                                color: arrow_color,
+                                                from_station: station_id,
+                                                to_station,
+                                                slot: this.board.stations[station_id].slots[to_station][channel]
+                                            }),
+                                            piece_to_remove: null,
+                                        })
+                                    );
+                                }
+                            });
+                        }
+                    });
+                }
             })
         })
         return possible_arrow_place_moves;
@@ -285,7 +302,8 @@ class GameState {
                                 possible_arrow_remove_moves.push(
                                     new Move({
                                         move_type: 'remove',
-                                        piece_to_remove: this.board.stations[station_id].slots[to_station][channel].contains
+                                        piece_to_remove: this.board.stations[station_id].slots[to_station][channel].contains,
+                                        piece_to_add: null,
                                     })
                                 )
                         }
@@ -475,7 +493,27 @@ class GameState {
                 this.place_base_post(piece_to_add);
             }
         }
-        //this.move_history.push(move);
+        this.move_history.push(move);
+
+        // Troubleshooting. Can delete
+        // if (this.blockers.length > 8) {
+        //     let main_gs_id = window.localStorage.getItem("main_gs_id");
+        //     if (this.gs_id === main_gs_id) {
+        //         console.log(this.blockers);
+        //         console.log(this)
+        //         console.log("move")
+        //         console.log(move);
+        //         console.log("all moves so far")
+        //         // console.log(this.move_history[this.move_history.length - 2]);
+        //         console.log(this.move_history)
+        //         debugger;
+        //     }
+        // }
+        // let main_gs_id = window.localStorage.getItem("main_gs_id");
+        // if (this.gs_id === main_gs_id) {
+        //     console.log(move);
+        // }
+
         this.next_turn();
     }
 
@@ -584,7 +622,8 @@ class GameState {
     * @param {BasePost} base_post
     */
     place_base_post(base_post) {
-        base_post.station.base_post = base_post;
+        this.board.stations[base_post.station.number].base_post = base_post;
+        // base_post.station.base_post = base_post;
     }
 
     /**
@@ -659,11 +698,15 @@ class GameState {
      * @param {Blocker} blocker 
      */
     remove_blocker(blocker) {
+        // let main_gs_id = window.localStorage.getItem("main_gs_id");
+
         this.slots.slots[blocker.slot.id].remove_blocker();
+
         this.blockers = this.blockers.filter( 
             b => b.to_move === false 
         );
         blocker.to_move = false;
+        this.update_slot_contents();
     }
 
     /**
@@ -673,10 +716,10 @@ class GameState {
      */
     remove_arrow(arrow) {
         this.slots.slots[arrow.slot.id].remove_arrow(this.board);
-        this.arrows = this.arrows.filter( 
-            a => a !== arrow 
-        );
-
+        // this.arrows = this.arrows.filter( 
+        //     a => a !== arrow 
+        // );
+        this.update_slot_contents();
         this.reevaluate_ring_support();
     }
 
@@ -696,7 +739,7 @@ class GameState {
         });
 
         placed_blocker.slot.add_blocker(placed_blocker);
-        this.blockers.push(placed_blocker);
+        this.update_slot_contents();
     }
 
     /**
@@ -713,7 +756,23 @@ class GameState {
             slot: this.slots.slots[arrow.slot.id], 
             is_preview: false});
         placed_arrow.slot.add_arrow(placed_arrow, this.board);
-        this.arrows.push(placed_arrow);
+        this.update_slot_contents();
+    }
+
+    /**
+     * Update the arrows and blockers
+     * on the board
+     */
+    update_slot_contents() {
+        this.arrows = [];
+        this.blockers = [];
+        this.board.slots.forEach( slot => {
+            if (slot.contains && slot.contains.constructor.name === "Arrow") {
+                this.arrows.push(slot.contains);
+            } else if (slot.contains && slot.contains.constructor.name === "Blocker") {
+                this.blockers.push(slot.contains);
+            }
+        });
     }
 
     /**

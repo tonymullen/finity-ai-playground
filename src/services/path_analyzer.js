@@ -41,8 +41,7 @@ class PathAnalyzer {
             base_post_path.push(station_ind);
         }
         return this.generate_raw_paths(
-            [base_post_path], game_state.path_pattern, board, game_state
-            );
+            [base_post_path], game_state.path_pattern, board);
     }
 
     has_enough_rings(board, color) {
@@ -85,7 +84,10 @@ class PathAnalyzer {
                         // allow ending on center station
                         if (out_arrow.to_station !== '0,0' ||
                             remaining_pattern.length === 1) {
-                            newpath.push(out_arrow.to_station);
+                                // Make sure the proposed station is on the board
+                                if (Object.keys(board.stations).includes(out_arrow.to_station)) {
+                                    newpath.push(out_arrow.to_station);
+                                }
                         }
                         possible_paths.push(newpath);
                     });
