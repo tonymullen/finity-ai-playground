@@ -1,4 +1,5 @@
 // import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import React from 'react';
 import GameManager from "./services/game_manager";
 import FinityCanvas from "./components/FinityCanvas";
@@ -29,22 +30,44 @@ class App extends React.Component {
 
           <div id="controls">
             <div id="reset-btn" className="c-btns">
-              <img src={require("./img/noun-reset-outline.png")} height="35" alt="play button"></img>
+              <img src={require("./img/noun-reset-outline.png")} 
+                height="35" alt="play button"
+                onMouseDown={e => (e.currentTarget.src = require("./img/noun-reset-solid.png"))}
+                onMouseUp={e => (e.currentTarget.src = require("./img/noun-reset-outline.png"))}>
+              </img>
             </div>
             <div id="play-btn" className="c-btns">
-              <img src={require("./img/noun-play-outline.png")} height="35" alt="play button"></img>
+              <img src={require("./img/noun-play-outline.png")}
+                onMouseDown={e => (e.currentTarget.src = require("./img/noun-play-solid.png"))}
+                onMouseUp={e => (e.currentTarget.src = require("./img/noun-play-outline.png"))}
+                height="35" alt="play button"
+                onClick={(e) => this.gm.play()}></img>
             </div>
             <div id="pause-btn" className="c-btns">
-              <img src={require("./img/noun-pause-outline.png")} height="35" alt="pause button"></img>
+              <img src={require("./img/noun-pause-outline.png")}
+                onMouseDown={e => (e.currentTarget.src = require("./img/noun-pause-solid.png"))}
+                onMouseUp={e => (e.currentTarget.src = require("./img/noun-pause-outline.png"))}
+                height="35" alt="pause button"
+                onClick={() => this.gm.pause()}></img>
             </div>
             <div id="step-fwd-btn" className="c-btns">
-              <img src={require("./img/noun-step-fwd-outline.png")} height="35" alt="step button"></img>
+              <img src={require("./img/noun-step-fwd-outline.png")} 
+                onMouseDown={e => (e.currentTarget.src = require("./img/noun-step-fwd-solid.png"))}
+                onMouseUp={e => (e.currentTarget.src = require("./img/noun-step-fwd-outline.png"))}
+                height="35" alt="step button"
+                onClick={() => this.gm.play_pause()}></img>
             </div>
             <div id="step-back-btn" className="c-btns">
-              <img src={require("./img/noun-step-bwd-outline.png")} height="35" alt="step back button"></img>
+              <img src={require("./img/noun-step-bwd-outline.png")} height="35" alt="step back button"
+                onMouseDown={e => (e.currentTarget.src = require("./img/noun-step-bwd-solid.png"))}
+                onMouseUp={e => (e.currentTarget.src = require("./img/noun-step-bwd-outline.png"))}>
+              </img>
             </div>
             <div id="fast-fwd-btn" className="c-btns">
-              <img src={require("./img/noun-ff-outline.png")} height="35" alt="fast forward button"></img>
+              <img src={require("./img/noun-ff-outline.png")} height="35" alt="fast forward button"
+                onMouseDown={e => (e.currentTarget.src = require("./img/noun-ff-solid.png"))}
+                onMouseUp={e => (e.currentTarget.src = require("./img/noun-ff-outline.png"))}>
+              </img>
             </div>
           </div>
         </div>

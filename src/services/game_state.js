@@ -513,8 +513,9 @@ class GameState {
         // if (this.gs_id === main_gs_id) {
         //     console.log(move);
         // }
-
-        this.next_turn();
+        if (this.play_status !== "over") {
+            this.next_turn();
+        } 
     }
 
     /**
@@ -936,7 +937,7 @@ class GameState {
             this.turn_index = (this.turn_index + 1) % this.player_count();
         // Play past (ignore) winners in >2 player games
         while (this.winners.includes(Object.keys(this.players)[this.turn_index])) {
-            this.turn_index = (this.turn_index + 1) % this.player_count();
+                this.turn_index = (this.turn_index + 1) % this.player_count();
             }
         }
     }

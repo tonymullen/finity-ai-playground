@@ -18,6 +18,7 @@ class GameManager {
     this.move_in_progress = null;
     this.move_to_finalize = null;
     this.piece_to_move = null;
+    this.play_state = 'paused';
   }
 
   /* 
@@ -88,6 +89,21 @@ class GameManager {
     this.redraw()
   }
 
+  play() {
+    this.play_state = 'playing';
+    this.initiate_agent_move();
+  }
+
+  pause() {
+    this.play_state = 'paused';
+  }
+
+  play_pause() {
+    this.initiate_agent_move();
+    console.log(this.game_state);
+    this.play_state = 'paused';
+  }
+
   /**
    * Set the player agent (human, AI, etc) for a color
    * @param {String} color 
@@ -96,7 +112,9 @@ class GameManager {
   set_player_agent(color, agent) {
     this.players_to_agents[color] = agent;
     window.localStorage.setItem("players_to_agents", JSON.stringify(this.players_to_agents));
-    this.initiate_agent_move();
+    if (this.play_state === 'playing') {
+      this.initiate_agent_move();
+    }
     this.redraw();
   }
 
@@ -157,7 +175,9 @@ class GameManager {
     this.move_to_finalize = null;
     this.piece_to_move = null;
     this.redraw();
-    this.initiate_agent_move();
+    if (this.play_state === 'playing') {
+      this.initiate_agent_move();
+    }
   }
 
   /**
