@@ -315,6 +315,36 @@ class GameState {
         return possible_arrow_remove_moves;
     }
 
+    /**
+     * Determine whether first move restrictions apply
+     * 
+     * @param {Slot} slot 
+     * @param {String} player 
+     */
+    can_block_slot(slot, player) {
+        let can_place = true;
+        if (this.move_history.length > 0) {
+            return can_place;
+        } else {
+            Object.keys(this.board.stations).forEach( station_id => {
+                if (this.board.stations[station_id].base_post && 
+                    this.board.stations[station_id].base_post.color !== player) {
+                        Object.keys(this.board.stations[station_id].slots).forEach( to_stat_id => {
+                            Object.keys(this.board.stations[station_id].slots[to_stat_id]).forEach( channel => {
+                                if (this.board.stations[station_id].slots[to_stat_id][channel].id == slot.id) {
+                                    can_place = false;
+                                }
+                                if (this.board.stations[station_id].slots[to_stat_id][channel].interferes_with.includes(slot.id)) {
+                                    can_place = false;
+                                }
+                            })
+                        });
+                }
+            });
+        }
+        return can_place;
+    }
+
     // Evaluation metrics
     /**
      * Longest unsupported (bridges only) path for a color

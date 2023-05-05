@@ -360,7 +360,8 @@ class GameManager {
                 from_stations.forEach(to_point => {
                   if (Math.abs(mouse_x - slot.to_points[to_point][0]) < SMALL_MOUSEOVER && 
                     Math.abs(mouse_y - slot.to_points[to_point][1]) < SMALL_MOUSEOVER) {
-                      if (this.game_state.not_redundant(slot, to_point, arrow_color)) {
+                      if (this.game_state.not_redundant(slot, to_point, arrow_color)
+                          && this.game_state.can_block_slot(slot, this.player_moving)) {
                         preview = slot.preview_arrows[to_point]; 
                         preview.color = arrow_color;
                       }
