@@ -37,7 +37,7 @@ function move(color, game_state) {
                 
         setTimeout(() => {
           resolve(best_move);
-        }, 200);
+        }, 100);
       });
     return move;
 }

@@ -30,6 +30,22 @@ class GameState {
         this.pa = new PathAnalyzer();
     }
 
+    reset(players) {
+        this.gs_id = String(Math.floor(Math.random()*90000) + 10000);
+        this.players = players;
+        this.slots = new Slots(this.gs_id);
+        this.station_slots = this.slots.station_slots;
+        this.board = new Board(this.player_count(), this.slots, this.gs_id);
+        this.path_pattern = this.generate_path_pattern();
+        this.arrows = [];
+        this.rings = this.set_up_rings();
+        this.base_posts = this.set_up_base_posts();
+        this.blockers = this.set_up_blockers();
+        this.winners = [];
+        this.play_status = null;
+        this.turn_index = 0;
+    }
+
     duplicate() {
         let dup_gs = new GameState();
         dup_gs.path_pattern = this.path_pattern;
@@ -62,29 +78,6 @@ class GameState {
             }
         );
         return dup_gs;
-    }
-
-    reset(players) {
-        this.players = players;
-        this.reset_board(this.player_count());
-        this.path_pattern = this.generate_path_pattern();
-        this.arrows = [];
-        this.rings = this.set_up_rings();
-        this.base_posts = this.set_up_base_posts();
-        this.blockers = this.set_up_blockers();
-        this.winners = [];
-        this.play_status = null;
-        this.turn_index = 0;
-    }
-
-    /**
-     * Reset the board for a particular number of players
-     * @param {Number} num 
-     */
-    reset_board(num) {
-        if (num !== this.board.num_players) {
-            this.board.setup_board(num, this.slots);
-        }
     }
 
     // Possible moves
@@ -363,7 +356,7 @@ class GameState {
 
     /**
      * Determine whether arrow move is allowed based on the rule
-     * 
+     * that you cannot undo the last move
      * 
      * @param {Slot} slot 
      * @param {String} arrow_color 
@@ -550,6 +543,9 @@ class GameState {
      * @param {Move} param0 
      */
     apply_move(move) {
+        if (move.gs_id !== this.gs_id) {
+            return;
+        }
         let {move_type, piece_to_add, piece_to_remove} = move;
         if (move_type === "place") {
             if (piece_to_add.constructor.name === "Arrow") {
@@ -582,24 +578,6 @@ class GameState {
         }
         this.move_history.push(move);
 
-        // Troubleshooting. Can delete
-        // if (this.blockers.length > 8) {
-        //     let main_gs_id = window.localStorage.getItem("main_gs_id");
-        //     if (this.gs_id === main_gs_id) {
-        //         console.log(this.blockers);
-        //         console.log(this)
-        //         console.log("move")
-        //         console.log(move);
-        //         console.log("all moves so far")
-        //         // console.log(this.move_history[this.move_history.length - 2]);
-        //         console.log(this.move_history)
-        //         debugger;
-        //     }
-        // }
-        // let main_gs_id = window.localStorage.getItem("main_gs_id");
-        // if (this.gs_id === main_gs_id) {
-        //     console.log(move);
-        // }
         if (this.play_status !== "over") {
             this.next_turn();
         } 
@@ -787,14 +765,13 @@ class GameState {
      */
     remove_blocker(blocker) {
         // let main_gs_id = window.localStorage.getItem("main_gs_id");
-
-        this.slots.slots[blocker.slot.id].remove_blocker();
-
         this.blockers = this.blockers.filter( 
             b => b.to_move === false 
         );
+        this.slots.slots[blocker.slot.id].remove_blocker();
+
         blocker.to_move = false;
-        this.update_slot_contents();
+        //this.update_slot_contents();
     }
 
     /**

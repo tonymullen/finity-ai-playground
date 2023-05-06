@@ -52,7 +52,7 @@ function move(color, game_state) {
         // the AI "thinking" about its move.
         setTimeout(() => {
           resolve(random_move);
-        }, 1000);
+        }, 100);
       });
     return move;
 }

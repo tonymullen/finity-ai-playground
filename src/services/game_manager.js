@@ -85,8 +85,9 @@ class GameManager {
    * @param {String} color 
    */
   toggle_player(color) {
+    this.pause();
     this.game_state.toggle_player(color);
-    this.redraw()
+    this.reset_game_state(this.game_state.players);
   }
 
   play() {
@@ -100,7 +101,6 @@ class GameManager {
 
   play_pause() {
     this.initiate_agent_move();
-    console.log(this.game_state);
     this.play_state = 'paused';
   }
 
@@ -198,12 +198,16 @@ class GameManager {
    * @param {String}
    */
   async handle_player_agent_move(player_moving, player_agent) {
-    let move = await player_agent_moves[player_agent](player_moving, this.game_state);
-    // move is instantiated only for non-local-human agents
-    // local-human agents' moves are handled interactively
-    if (move) {
-      this.game_state.apply_move(move);
-      this.finalize_move();
+    if (this.game_state.play_status !== 'over') {
+      let this_gs_id = this.game_state.gs_id;
+      let move = await player_agent_moves[player_agent](player_moving, this.game_state);
+      // move is instantiated only for non-local-human agents
+      // local-human agents' moves are handled interactively
+      if (move) {
+        move.gs_id = this_gs_id;
+        this.game_state.apply_move(move);
+        this.finalize_move();
+      }
     }
   }
 
@@ -283,9 +287,9 @@ class GameManager {
                   let size = 's';
                   if (station.rings[0]) {
                     size = 'm';
-                  }
-                  if (station.rings[1]) {
-                    size = 'l';
+                    if (station.rings[1]) {
+                      size = 'l';
+                    }
                   }
                   preview =  new Ring(this.player_moving, size, station);  
               } 
