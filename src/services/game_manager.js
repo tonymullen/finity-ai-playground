@@ -331,7 +331,8 @@ class GameManager {
             }
       this.board.slots.forEach( slot => {
         // For <4 player games, some slot midpoints are undefined
-        if (slot.midpoint && slot.contains === null) {
+        if (slot.midpoint && slot.contains === null 
+           && this.game_state.can_block_slot(slot, this.player_moving, 'blocker')) {
           if (Math.abs(mouse_x - slot.midpoint[0]) < MED_MOUSEOVER && 
               Math.abs(mouse_y - slot.midpoint[1]) < MED_MOUSEOVER) {
                 slot.preview_blocker.color = this.player_moving;
@@ -361,7 +362,8 @@ class GameManager {
                   if (Math.abs(mouse_x - slot.to_points[to_point][0]) < SMALL_MOUSEOVER && 
                     Math.abs(mouse_y - slot.to_points[to_point][1]) < SMALL_MOUSEOVER) {
                       if (this.game_state.not_redundant(slot, to_point, arrow_color)
-                          && this.game_state.can_block_slot(slot, this.player_moving)) {
+                          && this.game_state.can_block_slot(slot, this.player_moving, 'arrow')
+                          && this.game_state.can_make_arrow_move_in_slot(slot, arrow_color, 'place')) {
                         preview = slot.preview_arrows[to_point]; 
                         preview.color = arrow_color;
                       }
@@ -374,7 +376,8 @@ class GameManager {
       this.game_state.arrows.forEach(arrow => {
         if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER && 
               Math.abs(mouse_y - arrow.slot.midpoint[1]) < SMALL_MOUSEOVER) {
-                if (this.game_state.occupies_high_point(this.player_moving, arrow.to_station)) {
+                if (this.game_state.occupies_high_point(this.player_moving, arrow.to_station)
+                   && this.game_state.can_make_arrow_move_in_slot(arrow.slot, arrow.color, 'remove')) {
                   preview = arrow
                 }
           }
@@ -384,7 +387,8 @@ class GameManager {
       this.game_state.arrows.forEach(arrow => {
         if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER && 
               Math.abs(mouse_y - arrow.slot.midpoint[1]) < SMALL_MOUSEOVER) {
-                if (this.game_state.not_redundant(arrow.slot, arrow.from_station, arrow.color)) {
+                if (this.game_state.not_redundant(arrow.slot, arrow.from_station, arrow.color)
+                   && this.game_state.can_make_arrow_move_in_slot(arrow.slot, arrow.color, 'replace')) {
                   this.piece_to_move = arrow;
                   arrow.to_move = true;
                   preview = arrow.reverse();

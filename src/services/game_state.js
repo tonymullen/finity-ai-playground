@@ -184,7 +184,8 @@ class GameState {
         let possible_blocker_moves = [];
         let possible_blockers = this.blockers.filter( b => b.color === color);
         this.board.slots.filter(slot => slot.contains === null 
-                                        && this.stations_are_valid(Object.keys(slot.stations)))
+                                        && this.stations_are_valid(Object.keys(slot.stations))
+                                        && this.can_block_slot(slot, color, 'blocker'))
             .forEach(slot => {
                 possible_blockers.forEach( old_blocker => 
                     {   
@@ -239,11 +240,21 @@ class GameState {
                 if (Object.keys(this.board.stations).includes(to_station)) {
                     Object.keys(this.board.stations[station_id].slots[to_station]).forEach( channel => {
                         if (this.board.stations[station_id].slots[to_station][channel].contains === null
-                            && this.board.stations[station_id].slots[to_station][channel].blocked === false) {
+                            && this.board.stations[station_id].slots[to_station][channel].blocked === false
+                            && this.can_block_slot(
+                                this.board.stations[station_id].slots[to_station][channel],
+                                Object.keys(this.get_players())[this.turn_index], 
+                                'arrow')) {
                             ['b','w'].forEach( arrow_color => {
                                 if (this.not_redundant(
                                     this.board.stations[station_id].slots[to_station][channel], 
-                                    to_station, arrow_color)) {
+                                    to_station, arrow_color)
+                                    // TODO:
+                                    // Add constraint on undoing last move
+                                    && this.can_make_arrow_move_in_slot(
+                                        this.board.stations[station_id].slots[to_station][channel], 
+                                        arrow_color, 'place')
+                                    ) {
                                     possible_arrow_place_moves.push(
                                         new Move({
                                             move_type: 'place',
@@ -272,7 +283,11 @@ class GameState {
             if (this.not_redundant(
                     arrow.slot,
                     arrow.from_station, 
-                    arrow.color)) {
+                    arrow.color)
+                && this.can_make_arrow_move_in_slot(
+                    arrow.slot, 
+                    arrow.color, 
+                    'replace')) {
                 possible_arrow_reverse_moves.push(
                     new Move({
                         move_type: 'replace',
@@ -321,7 +336,7 @@ class GameState {
      * @param {Slot} slot 
      * @param {String} player 
      */
-    can_block_slot(slot, player) {
+    can_block_slot(slot, player, move_type) {
         let can_place = true;
         if (this.move_history.length > 0) {
             return can_place;
@@ -331,10 +346,11 @@ class GameState {
                     this.board.stations[station_id].base_post.color !== player) {
                         Object.keys(this.board.stations[station_id].slots).forEach( to_stat_id => {
                             Object.keys(this.board.stations[station_id].slots[to_stat_id]).forEach( channel => {
-                                if (this.board.stations[station_id].slots[to_stat_id][channel].id == slot.id) {
+                                if (this.board.stations[station_id].slots[to_stat_id][channel].id === slot.id) {
                                     can_place = false;
                                 }
-                                if (this.board.stations[station_id].slots[to_stat_id][channel].interferes_with.includes(slot.id)) {
+                                if (this.board.stations[station_id].slots[to_stat_id][channel].interferes_with.includes(slot.id)
+                                && move_type === 'arrow') {
                                     can_place = false;
                                 }
                             })
@@ -343,6 +359,47 @@ class GameState {
             });
         }
         return can_place;
+    }
+
+    /**
+     * Determine whether arrow move is allowed based on the rule
+     * 
+     * 
+     * @param {Slot} slot 
+     * @param {String} arrow_color 
+     * @param {String} move_type 
+     * @returns boolean
+     */
+    can_make_arrow_move_in_slot(slot, arrow_color, move_type) {
+        if (this.move_history.length === 0) {
+            return true;
+        }
+        let last_move = this.move_history[this.move_history.length-1];
+        if (move_type === 'place') {
+            if (last_move.move_type === 'remove'
+                && last_move.piece_to_remove.constructor.name === 'Arrow'
+                && last_move.piece_to_remove.color === arrow_color
+                && last_move.piece_to_remove.slot.id === slot.id) {
+                    return false;
+                }
+        }
+        if (move_type === 'remove') {
+            if (last_move.move_type === 'place'
+            && last_move.piece_to_add.constructor.name === 'Arrow'
+            && last_move.piece_to_add.color === arrow_color
+            && last_move.piece_to_add.slot.id === slot.id) {
+                return false;
+            }
+        }
+        if (move_type === 'replace') {
+            if (last_move.move_type === 'replace'
+            && last_move.piece_to_add.constructor.name === 'Arrow'
+            && last_move.piece_to_add.color === arrow_color
+            && last_move.piece_to_add.slot.id === slot.id) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // Evaluation metrics
