@@ -249,7 +249,9 @@ class GameManager {
           piece_to_remove = this.move_to_finalize;
         }
       }
-      this.game_state.apply_move(new Move({ move_type, piece_to_add, piece_to_remove }));
+      let move = new Move({ move_type, piece_to_add, piece_to_remove, gs_id: this.game_state.gs_id });
+      this.game_state.apply_move(move);
+      console.log(move)
       this.finalize_move();
     } else if (this.move_in_progress === 'blocker') {
       if (this.piece_to_move) {
