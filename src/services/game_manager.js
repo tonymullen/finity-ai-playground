@@ -21,13 +21,13 @@ class GameManager {
     this.play_state = 'paused';
   }
 
-  /* 
+  /*
   * Setup
   */
 
   /**
    * Set App attribute for game manager
-   * @param {App} app 
+   * @param {App} app
    */
   set_app(app) {
     this.app = app;
@@ -69,7 +69,7 @@ class GameManager {
   /**
    * Reset the game state
    */
-  reset_game_state(players) { 
+  reset_game_state(players) {
     this.game_state.reset(players);
     this.player_moving = null;
     this.move_in_progress = null;
@@ -81,8 +81,8 @@ class GameManager {
   /**
    * Toggle whether a particular color
    * player is playing
-   * 
-   * @param {String} color 
+   *
+   * @param {String} color
    */
   toggle_player(color) {
     this.pause();
@@ -106,8 +106,8 @@ class GameManager {
 
   /**
    * Set the player agent (human, AI, etc) for a color
-   * @param {String} color 
-   * @param {String} agent 
+   * @param {String} color
+   * @param {String} agent
    */
   set_player_agent(color, agent) {
     this.players_to_agents[color] = agent;
@@ -125,8 +125,8 @@ class GameManager {
   // Turn management
   /**
    * Returns whether the color is playing
-   * 
-   * @param {String} color 
+   *
+   * @param {String} color
    * @returns {boolean}
    */
   color_is_playing(color) {
@@ -135,13 +135,13 @@ class GameManager {
 
   initiate_agent_move() {
     this.handle_player_agent_move(
-      Object.keys(this.players)[this.game_state.turn_index],
+      Object.keys(this.players).filter(key=>this.players[key])[this.game_state.turn_index],
       this.players_to_agents[Object.keys(this.players)[this.game_state.turn_index]]);
   }
 
   /**
    * Returns current playing player
-   * 
+   *
    * @returns {(String|null)}
    */
   is_turn() {
@@ -154,9 +154,9 @@ class GameManager {
 
   /**
    * Initiate a move
-   * 
-   * @param {String} player 
-   * @param {String} move_type 
+   *
+   * @param {String} player
+   * @param {String} move_type
    */
   start_move(player, move_type) {
     if (!this.game_state.play_status) {
@@ -194,7 +194,7 @@ class GameManager {
 
   /**
    * Handle player move
-   * 
+   *
    * @param {String}
    */
   async handle_player_agent_move(player_moving, player_agent) {
@@ -263,9 +263,9 @@ class GameManager {
   /**
    * Generate a current move
    * for preview
-   * 
-   * @param {number} mouse_x 
-   * @param {number} mouse_y 
+   *
+   * @param {number} mouse_x
+   * @param {number} mouse_y
    * @returns {(Ring|BasePost|Blocker|Arrow)}
    */
   generate_move_preview(mouse_x, mouse_y) {
@@ -282,7 +282,7 @@ class GameManager {
     if (this.move_in_progress === 'ring') {
       Object.keys(this.board.stations).forEach( stat_key => {
         let station = this.board.stations[stat_key];
-        if (Math.abs(mouse_x - station.x) < LARGE_MOUSEOVER && 
+        if (Math.abs(mouse_x - station.x) < LARGE_MOUSEOVER &&
             Math.abs(mouse_y - station.y) < LARGE_MOUSEOVER) {
               if (stat_key !== '0,0') {
                 if (this.game_state.can_place_ring(station, this.player_moving)) {
@@ -293,8 +293,8 @@ class GameManager {
                       size = 'l';
                     }
                   }
-                  preview =  new Ring(this.player_moving, size, station);  
-              } 
+                  preview =  new Ring(this.player_moving, size, station);
+              }
             }
         }
       });
@@ -302,7 +302,7 @@ class GameManager {
     } else if (this.move_in_progress === 'base-post') {
       Object.keys(this.board.stations).forEach( stat_key => {
         let station = this.board.stations[stat_key];
-        if (Math.abs(mouse_x - station.x) < LARGE_MOUSEOVER && 
+        if (Math.abs(mouse_x - station.x) < LARGE_MOUSEOVER &&
             Math.abs(mouse_y - station.y) < LARGE_MOUSEOVER) {
               if (stat_key !== '0,0') {
                 if (this.game_state.can_move_base_post(station, this.player_moving)) {
@@ -315,8 +315,8 @@ class GameManager {
     } else if (this.move_in_progress === 'blocker') {
       let mouse_off = true;
       this.game_state.blockers.forEach( blocker => {
-        if (Math.abs(mouse_x - blocker.slot.midpoint[0]) < SMALL_MOUSEOVER && 
-            Math.abs(mouse_y - blocker.slot.midpoint[1]) < SMALL_MOUSEOVER && 
+        if (Math.abs(mouse_x - blocker.slot.midpoint[0]) < SMALL_MOUSEOVER &&
+            Math.abs(mouse_y - blocker.slot.midpoint[1]) < SMALL_MOUSEOVER &&
             blocker.color === this.player_moving){
               mouse_off = false;
               this.piece_to_move = blocker;
@@ -337,20 +337,20 @@ class GameManager {
             }
       this.board.slots.forEach( slot => {
         // For <4 player games, some slot midpoints are undefined
-        if (slot.midpoint && slot.contains === null 
+        if (slot.midpoint && slot.contains === null
            && this.game_state.can_block_slot(slot, this.player_moving, 'blocker')) {
-          if (Math.abs(mouse_x - slot.midpoint[0]) < MED_MOUSEOVER && 
+          if (Math.abs(mouse_x - slot.midpoint[0]) < MED_MOUSEOVER &&
               Math.abs(mouse_y - slot.midpoint[1]) < MED_MOUSEOVER) {
                 slot.preview_blocker.color = this.player_moving;
-                preview = slot.preview_blocker;                
-            } 
-        } 
+                preview = slot.preview_blocker;
+            }
+        }
       });
       this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'opp-blocker') {
       this.game_state.blockers.forEach( blocker => {
-        if (blocker.color !== this.player_moving && 
-            Math.abs(mouse_x - blocker.slot.midpoint[0]) < SMALL_MOUSEOVER && 
+        if (blocker.color !== this.player_moving &&
+            Math.abs(mouse_x - blocker.slot.midpoint[0]) < SMALL_MOUSEOVER &&
             Math.abs(mouse_y - blocker.slot.midpoint[1]) < SMALL_MOUSEOVER ){
               this.move_to_finalize = blocker;
               blocker.to_move = true;
@@ -365,22 +365,22 @@ class GameManager {
               if (slot.contains === null && !slot.blocked) {
                 let from_stations = Object.keys(slot.to_points);
                 from_stations.forEach(to_point => {
-                  if (Math.abs(mouse_x - slot.to_points[to_point][0]) < SMALL_MOUSEOVER && 
+                  if (Math.abs(mouse_x - slot.to_points[to_point][0]) < SMALL_MOUSEOVER &&
                     Math.abs(mouse_y - slot.to_points[to_point][1]) < SMALL_MOUSEOVER) {
                       if (this.game_state.not_redundant(slot, to_point, arrow_color)
                           && this.game_state.can_block_slot(slot, this.player_moving, 'arrow')
                           && this.game_state.can_make_arrow_move_in_slot(slot, arrow_color, 'place')) {
-                        preview = slot.preview_arrows[to_point]; 
+                        preview = slot.preview_arrows[to_point];
                         preview.color = arrow_color;
                       }
                 }
             });
-        } 
+        }
       });
       this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'rem-arrow') {
       this.game_state.arrows.forEach(arrow => {
-        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER && 
+        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER &&
               Math.abs(mouse_y - arrow.slot.midpoint[1]) < SMALL_MOUSEOVER) {
                 if (this.game_state.occupies_high_point(this.player_moving, arrow.to_station)
                    && this.game_state.can_make_arrow_move_in_slot(arrow.slot, arrow.color, 'remove')) {
@@ -391,7 +391,7 @@ class GameManager {
       this.move_to_finalize = preview;
     } else if (this.move_in_progress === 'rev-arrow') {
       this.game_state.arrows.forEach(arrow => {
-        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER && 
+        if (Math.abs(mouse_x - arrow.slot.midpoint[0]) < SMALL_MOUSEOVER &&
               Math.abs(mouse_y - arrow.slot.midpoint[1]) < SMALL_MOUSEOVER) {
                 if (this.game_state.not_redundant(arrow.slot, arrow.from_station, arrow.color)
                    && this.game_state.can_make_arrow_move_in_slot(arrow.slot, arrow.color, 'replace')) {
@@ -409,12 +409,12 @@ class GameManager {
 
   // Move conditions
 
- 
+
 
   // Getters and utilities
   /**
    * Get game state
-   * 
+   *
    * @returns GameState
    */
   get_game_state() {
@@ -424,8 +424,8 @@ class GameManager {
   /**
    * Set whether game board needs redrawing
    * (avoid unnecessary draw cycles)
-   * 
-   * @param {bool} bool 
+   *
+   * @param {bool} bool
    */
   set_needs_redraw(bool) {
     this.needs_redraw = bool;

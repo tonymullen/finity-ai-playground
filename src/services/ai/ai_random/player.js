@@ -7,9 +7,9 @@ const agent = {
 
 /**
  * Generate a move for color based on existing game state
- * 
- * @param {Color} color 
- * @param {GameState} game_state 
+ *
+ * @param {Color} color
+ * @param {GameState} game_state
  * @returns {Move}
  */
 function move(color, game_state) {
@@ -33,7 +33,7 @@ function move(color, game_state) {
       // mostly picking arrow and blocker moves, which are more
       // common than ring and base post moves. So we'll pick a random
       // threshold and use the preferences above to pick a move that
-      // meets the threshold. The while loop ensures we eventually pick 
+      // meets the threshold. The while loop ensures we eventually pick
       // some move.
       let random_move = null;
       while (!random_move) {

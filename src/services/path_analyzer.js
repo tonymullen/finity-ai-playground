@@ -1,5 +1,5 @@
 class PathAnalyzer {
-    
+
     reachable_stations(color, board, game_state, station_ind) {
         // station_ind is optional. default is reachable
         // stations from current base station. If station_ind is passed,
@@ -26,8 +26,8 @@ class PathAnalyzer {
         // station_ind is optional. default is legal paths
         // from current base station. If station_ind is passed,
         // then returns legal paths from that station
-        let paths = this.raw_paths(color, 
-            board, game_state, 
+        let paths = this.raw_paths(color,
+            board, game_state,
             station_ind).filter(
                 this.has_enough_rings(board, color));
         return paths;
@@ -69,6 +69,7 @@ class PathAnalyzer {
 
     // Generate possible paths of stations based on arrow sequences only
     generate_raw_paths(possible_paths, remaining_pattern, board) {
+
         if (remaining_pattern.length === 0) {
             return possible_paths;
         } else {
@@ -76,6 +77,7 @@ class PathAnalyzer {
                 if (possible_path.length === 9 - remaining_pattern.length) {
                     let last_station_ind = possible_path[possible_path.length-1];
                     let last_station = board.stations[last_station_ind];
+
                     let matching_arrows = last_station.out_arrows(remaining_pattern[0]);
 
                     matching_arrows.forEach(out_arrow => {

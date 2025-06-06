@@ -10,10 +10,10 @@ import PathAnalyzer from './path_analyzer';
 
 class GameState {
     constructor() {
-        // The gs_id attribute is an id value to identify individual objects. 
+        // The gs_id attribute is an id value to identify individual objects.
         // It is used to distinguish the main game state from virtual game states
-        // created by the AI to test moves. Mainly for debugging. 
-        this.gs_id = String(Math.floor(Math.random()*90000) + 10000); 
+        // created by the AI to test moves. Mainly for debugging.
+        this.gs_id = String(Math.floor(Math.random()*90000) + 10000);
         this.slots = new Slots(this.gs_id);
         this.station_slots = this.slots.station_slots;
         this.players = this.get_players();
@@ -54,19 +54,19 @@ class GameState {
         dup_gs.move_history = this.move_history.slice();
 
         this.arrows.forEach(
-            arrow => { 
+            arrow => {
                 let new_arrow = new Arrow({
-                    color: arrow.color, 
+                    color: arrow.color,
                     from_station: arrow.from_station,
                     to_station: arrow.to_station,
                     slot: this.slots.slots[arrow.slot.id],
                     is_preview: false});
                 dup_gs.place_arrow(new_arrow);
             });
-        
+
         this.blockers.forEach(
             blocker => { dup_gs.place_blocker(blocker) });
-        
+
         this.base_posts.forEach(
             base_post => {
                 let dup_base_post = new BasePost(
@@ -84,9 +84,9 @@ class GameState {
 
     /**
      * Return list of possible moves for color
-     * 
-     * @param {String} color 
-     * @returns 
+     *
+     * @param {String} color
+     * @returns
      */
     possible_moves(color) {
         return [].concat(
@@ -103,8 +103,8 @@ class GameState {
     /**
      * Return a list of possible ring placement
      * moves for color
-     * 
-     * @param {String} color 
+     *
+     * @param {String} color
      * @returns {Move[]}
      */
     possible_ring_moves(color) {
@@ -114,7 +114,7 @@ class GameState {
             this.board,
             this
         );
-        
+
         // Reachable stations is a set. We need to convert it to an array
         // so we can filter it.
         reachable_stations = [...reachable_stations].filter(
@@ -138,18 +138,17 @@ class GameState {
                 })
             );
         });
-
         return possible_ring_moves;
     }
 
     /**
      * Return possible base post moves for
-     * 
-     * @param {String} color 
+     *
+     * @param {String} color
      */
     possible_base_post_moves(color) {
         let possible_base_post_moves = []
-  
+
         let supported_bp_stations = Object.keys(this.board.stations).filter(
             station_id => this.can_move_base_post(this.board.stations[station_id], color)
         )
@@ -170,18 +169,18 @@ class GameState {
 
     /**
      * Return possible blocker moves
-     * 
-     * @param {String} color 
+     *
+     * @param {String} color
      */
     possible_blocker_moves(color) {
         let possible_blocker_moves = [];
         let possible_blockers = this.blockers.filter( b => b.color === color);
-        this.board.slots.filter(slot => slot.contains === null 
+        this.board.slots.filter(slot => slot.contains === null
                                         && this.stations_are_valid(Object.keys(slot.stations))
                                         && this.can_block_slot(slot, color, 'blocker'))
             .forEach(slot => {
-                possible_blockers.forEach( old_blocker => 
-                    {   
+                possible_blockers.forEach( old_blocker =>
+                    {
                         possible_blocker_moves.push(
                             new Move({
                                 move_type: 'replace',
@@ -228,7 +227,7 @@ class GameState {
 
     possible_arrow_place_moves() {
         let possible_arrow_place_moves = [];
-        Object.keys(this.board.stations).forEach( station_id => { 
+        Object.keys(this.board.stations).forEach( station_id => {
             Object.keys(this.board.stations[station_id].slots).forEach( to_station => {
                 if (Object.keys(this.board.stations).includes(to_station)) {
                     Object.keys(this.board.stations[station_id].slots[to_station]).forEach( channel => {
@@ -236,16 +235,16 @@ class GameState {
                             && this.board.stations[station_id].slots[to_station][channel].blocked === false
                             && this.can_block_slot(
                                 this.board.stations[station_id].slots[to_station][channel],
-                                Object.keys(this.get_players())[this.turn_index], 
+                                Object.keys(this.get_players())[this.turn_index],
                                 'arrow')) {
                             ['b','w'].forEach( arrow_color => {
                                 if (this.not_redundant(
-                                    this.board.stations[station_id].slots[to_station][channel], 
+                                    this.board.stations[station_id].slots[to_station][channel],
                                     to_station, arrow_color)
                                     // TODO:
                                     // Add constraint on undoing last move
                                     && this.can_make_arrow_move_in_slot(
-                                        this.board.stations[station_id].slots[to_station][channel], 
+                                        this.board.stations[station_id].slots[to_station][channel],
                                         arrow_color, 'place')
                                     ) {
                                     possible_arrow_place_moves.push(
@@ -275,11 +274,11 @@ class GameState {
         this.arrows.forEach( arrow => {
             if (this.not_redundant(
                     arrow.slot,
-                    arrow.from_station, 
+                    arrow.from_station,
                     arrow.color)
                 && this.can_make_arrow_move_in_slot(
-                    arrow.slot, 
-                    arrow.color, 
+                    arrow.slot,
+                    arrow.color,
                     'replace')) {
                 possible_arrow_reverse_moves.push(
                     new Move({
@@ -325,9 +324,9 @@ class GameState {
 
     /**
      * Determine whether first move restrictions apply
-     * 
-     * @param {Slot} slot 
-     * @param {String} player 
+     *
+     * @param {Slot} slot
+     * @param {String} player
      */
     can_block_slot(slot, player, move_type) {
         let can_place = true;
@@ -335,7 +334,7 @@ class GameState {
             return can_place;
         } else {
             Object.keys(this.board.stations).forEach( station_id => {
-                if (this.board.stations[station_id].base_post && 
+                if (this.board.stations[station_id].base_post &&
                     this.board.stations[station_id].base_post.color !== player) {
                         Object.keys(this.board.stations[station_id].slots).forEach( to_stat_id => {
                             Object.keys(this.board.stations[station_id].slots[to_stat_id]).forEach( channel => {
@@ -357,10 +356,10 @@ class GameState {
     /**
      * Determine whether arrow move is allowed based on the rule
      * that you cannot undo the last move
-     * 
-     * @param {Slot} slot 
-     * @param {String} arrow_color 
-     * @param {String} move_type 
+     *
+     * @param {Slot} slot
+     * @param {String} arrow_color
+     * @param {String} move_type
      * @returns boolean
      */
     can_make_arrow_move_in_slot(slot, arrow_color, move_type) {
@@ -398,7 +397,7 @@ class GameState {
     // Evaluation metrics
     /**
      * Longest unsupported (bridges only) path for a color
-     * @param {String} color 
+     * @param {String} color
      * @returns {number}
      */
     longest_bridge_path(color, game_state) {
@@ -415,7 +414,7 @@ class GameState {
 
     /**
      * Longest supported (bridges+rings) path for a color
-     * @param {String} color 
+     * @param {String} color
      * @returns {number}
      */
     longest_supported_path(color, game_state) {
@@ -432,7 +431,7 @@ class GameState {
 
     /**
      * Number of reachable stations for a color
-     * @param {String} color 
+     * @param {String} color
      * @returns {number}
      */
     number_of_reachable_stations(color, game_state) {
@@ -443,7 +442,7 @@ class GameState {
 
     /**
      * Number of rings color
-     * @param {String} color 
+     * @param {String} color
      * @returns {number}
      */
     number_of_rings(color, game_state) {
@@ -453,7 +452,7 @@ class GameState {
 
     /**
      * Number of controlled for a color
-     * @param {String} color 
+     * @param {String} color
      * @returns {number}
      */
     number_of_controlled_stations(color, game_state) {
@@ -466,22 +465,22 @@ class GameState {
      * Looks at all pairs of stations controlled by
      * the color and averages the number of bridges (1, 2, or 3)
      * between the bridges
-     * 
-     * @param {String} color 
+     *
+     * @param {String} color
      */
     average_strength_of_station_pairs(color, game_state) {
         let strength_sum = 0;
         let num_pairs = 0;;
         Object.keys(game_state.board.stations).filter(
             station => game_state.board.stations[station].controlled_by() === color
-            ).forEach( station1 => { 
+            ).forEach( station1 => {
                 Object.keys(game_state.board.stations).filter(
                     station => game_state.board.stations[station].controlled_by() === color
                 ).forEach( station2 => {
                     let strength = 0;
                     this.arrows.forEach( arrow => {
                         if ((arrow.from_station === station1
-                             && arrow.to_station === station2) || 
+                             && arrow.to_station === station2) ||
                             (arrow.from_station === station2
                              && arrow.to_station === station1))
                             {
@@ -499,14 +498,14 @@ class GameState {
         } else {
             return strength_sum / num_pairs;
         }
-    }  
+    }
 
     /**
      * Looks at all pairs of stations controlled by
      * the color and finds the max # of bridges (1, 2, or 3)
      * between the bridges
-     * 
-     * @param {String} color 
+     *
+     * @param {String} color
      */
     max_strength_of_station_pairs(color) {
 
@@ -516,8 +515,8 @@ class GameState {
      * Looks at all pairs of stations controlled by
      * the color and finds the min # of bridges (1, 2, or 3)
      * between the bridges
-     * 
-     * @param {String} color 
+     *
+     * @param {String} color
      */
     min_strength_of_station_pairs(color) {
 
@@ -526,8 +525,8 @@ class GameState {
     /**
      * Returns total number of stations with at least
      * 1 ring of the color on them.
-     * 
-     * @param {String} color 
+     *
+     * @param {String} color
      */
     ring_spread(color) {
 
@@ -540,7 +539,7 @@ class GameState {
 
     /**
      * Apply a move to the current game state
-     * @param {Move} param0 
+     * @param {Move} param0
      */
     apply_move(move) {
         if (move.gs_id !== this.gs_id) {
@@ -580,16 +579,16 @@ class GameState {
 
         if (this.play_status !== "over") {
             this.next_turn();
-        } 
+        }
     }
 
     /**
      * Check whether an arrow is redundant
      * i.e. slot has neighbor with same color arrow and same destination
-     * 
-     * @param {Slot} slot 
-     * @param {String} to_point 
-     * @param {String} color 
+     *
+     * @param {Slot} slot
+     * @param {String} to_point
+     * @param {String} color
      * @returns {boolean}
      */
     not_redundant(slot, to_point, color) {
@@ -608,9 +607,9 @@ class GameState {
     /**
      * Check if a player color occupies the
      * high point on an arrow destination station
-     * 
-     * @param {String} color 
-     * @param {Arrow} arrow 
+     *
+     * @param {String} color
+     * @param {Arrow} arrow
      * @returns {boolean}
      */
     occupies_high_point(color, station) {
@@ -620,7 +619,7 @@ class GameState {
             return true;
         } else if (
             !this.board.stations[station].base_post &&
-            this.board.stations[station].rings[0] && 
+            this.board.stations[station].rings[0] &&
             this.board.stations[station].rings[0].color === color) {
             return true
         } else if (
@@ -647,9 +646,9 @@ class GameState {
     /**
      * Determine whether a base post can
      * be moved to a given station
-     * 
-     * @param {Station} station 
-     * @param {String} color 
+     *
+     * @param {Station} station
+     * @param {String} color
      * @returns {boolean}
      */
     can_move_base_post(station, color) {
@@ -661,9 +660,9 @@ class GameState {
     /**
      * Check to see if a potential new path has rings
      * to support base post move
-     * 
-     * @param {String} station_ind 
-     * @param {String} color 
+     *
+     * @param {String} station_ind
+     * @param {String} color
      * @returns {boolean}
      */
     new_path_has_rings(station_ind, color) {
@@ -684,7 +683,7 @@ class GameState {
 
     /**
     * Place a base post on a station
-    * 
+    *
     * @param {BasePost} base_post
     */
     place_base_post(base_post) {
@@ -694,7 +693,7 @@ class GameState {
 
     /**
     * Remove a base post from a station
-    * 
+    *
     * @param {BasePost} base_post
     */
     remove_base_post(base_post) {
@@ -708,8 +707,8 @@ class GameState {
 
     /**
     * Place a ring on a station
-    * 
-    * @param {Ring} ring 
+    *
+    * @param {Ring} ring
     */
     place_ring(ring) {
         let station_id = ring.station.number;
@@ -726,13 +725,13 @@ class GameState {
      /**
      * Determine whether a ring can be placed
      * on a station
-     * 
-     * @param {Station} station 
-     * @param {String} color 
+     *
+     * @param {Station} station
+     * @param {String} color
      * @returns {boolean}
      */
     can_place_ring(station, color) {
-        return ((station.rings.filter(ring => ring).length < 3) && 
+        return ((station.rings.filter(ring => ring).length < 3) &&
                 (!station.base_post || station.base_post.color !== color) &&
                 this.pa.reachable_stations(
                 color, this.board, this
@@ -741,8 +740,8 @@ class GameState {
 
     /**
     * Remove a ring from the board
-    * 
-    * @param {Ring} ring 
+    *
+    * @param {Ring} ring
     */
     remove_ring(ring) {
         let station_id = ring.station.number;
@@ -760,13 +759,13 @@ class GameState {
 
     /**
      * Remove a blocker from the board
-     * 
-     * @param {Blocker} blocker 
+     *
+     * @param {Blocker} blocker
      */
     remove_blocker(blocker) {
         // let main_gs_id = window.localStorage.getItem("main_gs_id");
-        this.blockers = this.blockers.filter( 
-            b => b.to_move === false 
+        this.blockers = this.blockers.filter(
+            b => b.to_move === false
         );
         this.slots.slots[blocker.slot.id].remove_blocker();
 
@@ -776,13 +775,13 @@ class GameState {
 
     /**
      * Remove an arrow from the board
-     * 
-     * @param {Arrow} arrow 
+     *
+     * @param {Arrow} arrow
      */
     remove_arrow(arrow) {
         this.slots.slots[arrow.slot.id].remove_arrow(this.board);
-        // this.arrows = this.arrows.filter( 
-        //     a => a !== arrow 
+        // this.arrows = this.arrows.filter(
+        //     a => a !== arrow
         // );
         this.update_slot_contents();
         this.reevaluate_ring_support();
@@ -790,14 +789,14 @@ class GameState {
 
     /**
      * Place a blocker on the board
-     * 
-     * @param {Blocker} blocker 
+     *
+     * @param {Blocker} blocker
      */
     place_blocker(blocker){
 
-        let placed_blocker = 
+        let placed_blocker =
         new Blocker({
-            color: blocker.color, 
+            color: blocker.color,
             slot: this.slots.slots[blocker.slot.id],
             station_slots: this.station_slots,
             is_preview: false
@@ -809,16 +808,16 @@ class GameState {
 
     /**
      * Place an arrow on the board
-     * 
-     * @param {Arrow} arrow 
+     *
+     * @param {Arrow} arrow
      */
     place_arrow(arrow){
-        let placed_arrow = 
+        let placed_arrow =
         new Arrow({
-            color: arrow.color, 
+            color: arrow.color,
             from_station: arrow.from_station,
-            to_station: arrow.to_station, 
-            slot: this.slots.slots[arrow.slot.id], 
+            to_station: arrow.to_station,
+            slot: this.slots.slots[arrow.slot.id],
             is_preview: false});
         placed_arrow.slot.add_arrow(placed_arrow, this.board);
         this.update_slot_contents();
@@ -851,17 +850,17 @@ class GameState {
     }
 
     /**
-     * Clear single player (color)'s 
+     * Clear single player (color)'s
      * orphan rings
-     * 
-     * @param {String} color 
+     *
+     * @param {String} color
      */
     clear_orphans(color) {
         let reachable_stations = this.pa.reachable_stations(
         color, this.board, this);
         let rings = this.rings.filter(ring => ring.color === color);
         rings.forEach(ring => {
-        if (!reachable_stations.has(ring.station.number) && 
+        if (!reachable_stations.has(ring.station.number) &&
             ring.station.number !== '0,0') {
             this.remove_ring(ring);
         }
@@ -906,7 +905,7 @@ class GameState {
         let blockers= [];
         this.player_colors().forEach( (color, ind) => {
         blockers.push(new Blocker({
-            color, 
+            color,
             from_station: this.board.start_stations[ind],
             to_station: '0,0',
             slot_loc: 'l',
@@ -915,7 +914,7 @@ class GameState {
         blockers.push(new Blocker({
             color,
             from_station: this.board.start_stations[ind],
-            to_station: '0,0',        
+            to_station: '0,0',
             slot_loc: 'r',
             station_slots: this.station_slots,
         }));
@@ -970,8 +969,8 @@ class GameState {
     /**
      * Toggle whether a particular color
      * player is playing
-     * 
-     * @param {String} color 
+     *
+     * @param {String} color
      */
     toggle_player(color) {
         // Ensure that there are at least 2 players

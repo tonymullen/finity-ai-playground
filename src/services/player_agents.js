@@ -17,7 +17,7 @@ const player_agent_descriptions = {
     'ai-random': ai_random.description,
     'ai-easy': ai_easy.description,
     'ai-hard': '',
-    'ai-custom': ai_custom.description,    
+    'ai-custom': ai_custom.description,
 }
 
 export { player_agent_moves, player_agent_descriptions };
