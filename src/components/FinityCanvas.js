@@ -3,10 +3,11 @@ import Sketch from "react-p5";
 
 import DisplayHandler from "../services/display_handler";
 
-const PIXEL_WIDTH = 950
-const PIXEL_HEIGHT = 650
-const BG_COLOR = [.4, .6, .5]
-const field = [PIXEL_WIDTH, PIXEL_HEIGHT]
+const PIXEL_WIDTH = 950;
+const PIXEL_HEIGHT = 650;
+const BG_COLOR = [.4, .6, .5];
+const SCALE_FACTOR = 0.8;
+const field = [PIXEL_WIDTH, PIXEL_HEIGHT];
 
 let imgs = {};
 let display_handler;
@@ -119,10 +120,10 @@ const finityCanvas = ({ app }) => {
       // defining as props yields double event firing
       cnv.mousePressed((_) => {
         gm.handle_move_click();
-        move_preview = gm.generate_move_preview(p5.mouseX, p5.mouseY);
+        move_preview = gm.generate_move_preview(p5.mouseX/SCALE_FACTOR, p5.mouseY/SCALE_FACTOR);
       });
       cnv.mouseMoved((_) => {
-        move_preview = gm.generate_move_preview(p5.mouseX, p5.mouseY);
+        move_preview = gm.generate_move_preview(p5.mouseX/SCALE_FACTOR, p5.mouseY/SCALE_FACTOR);
       });
     }
   };
@@ -135,8 +136,8 @@ const finityCanvas = ({ app }) => {
     }
   }
 
-  return <Sketch setup={setup} 
-                draw={draw} 
+  return <Sketch setup={setup}
+                draw={draw}
                 preload={preload}/>;
 };
 

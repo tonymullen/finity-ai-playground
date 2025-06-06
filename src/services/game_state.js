@@ -150,7 +150,8 @@ class GameState {
         let possible_base_post_moves = []
 
         let supported_bp_stations = Object.keys(this.board.stations).filter(
-            station_id => this.can_move_base_post(this.board.stations[station_id], color)
+            station_id => this.can_move_base_post(
+                this.board.stations[station_id], color)
         )
 
         supported_bp_stations.forEach( station_id => {
@@ -176,8 +177,8 @@ class GameState {
         let possible_blocker_moves = [];
         let possible_blockers = this.blockers.filter( b => b.color === color);
         this.board.slots.filter(slot => slot.contains === null
-                                        && this.stations_are_valid(Object.keys(slot.stations))
-                                        && this.can_block_slot(slot, color, 'blocker'))
+                && this.stations_are_valid(Object.keys(slot.stations))
+                && this.can_block_slot(slot, color, 'blocker'))
             .forEach(slot => {
                 possible_blockers.forEach( old_blocker =>
                     {
