@@ -16,7 +16,7 @@ const PlayerPanel = ({ player, gm }) => {
   }
   return (
     <div  id={ "player_"+player } className="player-panel" to-play="false">
-      <Form.Select 
+      <Form.Select
         aria-label="select player agent"
         defaultValue={ gm.players_to_agents[player] }
         onChange={(e)=>{
@@ -25,6 +25,7 @@ const PlayerPanel = ({ player, gm }) => {
         <option value="human-loc">Local Human</option>
         <option disabled value="human-rem">Remote Human</option>
         <option value="ai-random">Random Moves AI</option>
+        <option value="ai-chatgpt">ChatGPT</option>
         <option value="ai-easy">Easy AI</option>
         <option disabled value="ai-hard">Hard AI</option>
         <option disabled value="ai-custom">Custom AI</option>
@@ -37,7 +38,7 @@ const PlayerPanel = ({ player, gm }) => {
       )
       }
       {
-        (gm.is_turn() === player && 
+        (gm.is_turn() === player &&
          !(gm.game_state.winners.includes(player))) ?
         (<div className="no-play-panel to-play-panel"></div>)
         : <>
@@ -52,9 +53,8 @@ const PlayerPanel = ({ player, gm }) => {
             (<div className="no-play-panel"></div>)
           }
         </>
-      } 
+      }
     </div>
-
   )
 }
 

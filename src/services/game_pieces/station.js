@@ -15,17 +15,17 @@ class Station {
   /**
    * Return number of rings (non-null places)
    * on the station
-   * 
+   *
    * @returns {number}
    */
   ring_count() {
     return this.rings.filter(ring => ring).length;
   }
-  
+
   /**
    * Return the size ('s', 'm', or 'l') of
    * the topmost open position on the station
-   * 
+   *
    * @returns {String}
    */
   topmost_opening() {
@@ -40,7 +40,7 @@ class Station {
 
   /**
    * Which color controls the station?
-   * 
+   *
    * @returns {(String|null)}
    */
   controlled_by() {

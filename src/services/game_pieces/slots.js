@@ -53,7 +53,7 @@ class Slot {
 
 class Slots {
   constructor(gs_id) {
-    this.slots = Array.from({length: 72}, 
+    this.slots = Array.from({length: 72},
       () => new Slot(gs_id)
     );
     this.station_slots = {
@@ -115,7 +115,7 @@ class Slots {
           'c': this.slots[67],
           'r': this.slots[68]
         },
-      }, 
+      },
       "-1,1": {
         "-1,2": {
           'l': this.slots[24],
@@ -131,7 +131,7 @@ class Slots {
           'l': this.slots[2],
           'c': this.slots[1],
           'r': this.slots[0]
-        },   
+        },
          "-1,0": {
           'l': this.slots[18],
           'c': this.slots[19],
@@ -142,8 +142,8 @@ class Slots {
           'c': this.slots[22],
           'r': this.slots[23]
         },
-       
-      },  
+
+      },
       "0,1": {
         "1,1": {
           'l': this.slots[33],
@@ -170,7 +170,7 @@ class Slots {
           'c': this.slots[31],
           'r': this.slots[32]
         },
-      }, 
+      },
       "1,0": {
         "2,-1": {
           'l': this.slots[42],
@@ -263,7 +263,7 @@ class Slots {
           'c': this.slots[61],
           'r': this.slots[60]
         },
-      },  
+      },
       "1,1": {
         "1,0": {
           'l': this.slots[41],
@@ -311,7 +311,7 @@ class Slots {
           'c': this.slots[43],
           'r': this.slots[42]
         },
-      },  
+      },
       "1,-2": {
         "0,-1": {
           'l': this.slots[59],
@@ -323,7 +323,7 @@ class Slots {
           'c': this.slots[52],
           'r': this.slots[51]
         },
-      },  
+      },
     }
     this.set_up_slot_relations();
     this.slots.forEach((slot, index) => {
@@ -331,7 +331,7 @@ class Slots {
     });
     this.gs_id = gs_id;
 
-    const station_numbers = ["0,0", "-1,0", "-1,1", "0,1", "1,0", 
+    const station_numbers = ["0,0", "-1,0", "-1,1", "0,1", "1,0",
     "1,-1", "0,-1", "-1,-1", "1,1",  "-2,1", "-1,2", "2,-1", "1,-2"]
 
     station_numbers.forEach((from_station) => {
@@ -347,16 +347,16 @@ class Slots {
           });
         }
       });
-    }); 
+    });
 
     // Set up previews
     this.slots.forEach((slot) => {
       slot.preview_arrows = {};
       Object.keys(slot.stations).forEach((stat) => {
         slot.preview_arrows[stat] = new Arrow({
-          from_station: slot.stations[stat], 
-          to_station: stat, 
-          slot: slot, 
+          from_station: slot.stations[stat],
+          to_station: stat,
+          slot: slot,
           is_preview: true});
       });
     });
@@ -364,7 +364,7 @@ class Slots {
     // Set up previews
     this.slots.forEach((slot) => {
       slot.preview_blocker = new Blocker({
-        slot, 
+        slot,
         is_preview: true});
     });
 
@@ -486,7 +486,6 @@ class Slots {
       this.slots[71].neighbors = [69, 70];
     }
   }
-  
 }
 
 // slots is an array of all 72 slots

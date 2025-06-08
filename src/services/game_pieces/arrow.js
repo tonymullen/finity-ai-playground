@@ -1,9 +1,9 @@
 class Arrow {
   constructor({
-    color, 
-    from_station, 
-    to_station, 
-    slot, 
+    color,
+    from_station,
+    to_station,
+    slot,
     is_preview}={}) {
     this.color = color;
     this.is_preview = is_preview;
@@ -14,12 +14,13 @@ class Arrow {
 
   reverse() {
     let rev_arrow = new Arrow({
-      color: this.color, 
-      from_station: this.to_station, 
-      to_station: this.from_station, 
+      color: this.color,
+      from_station: this.to_station,
+      to_station: this.from_station,
       slot: this.slot});
     return rev_arrow;
   }
+
 }
 
 export default Arrow;

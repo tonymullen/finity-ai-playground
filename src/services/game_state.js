@@ -533,11 +533,6 @@ class GameState {
 
     }
 
-
-    toJSON() {
-
-    }
-
     /**
      * Apply a move to the current game state
      * @param {Move} param0
@@ -1026,6 +1021,26 @@ class GameState {
         }
     }
 
+    toJSON() {
+        // console.log(this.board);
+        return {
+            gs_id: this.gs_id,
+            turn_index: this.turn_index,
+            players: Object.keys(this.players).filter(
+                player => this.players[player]
+            ),
+            // rings: this.rings,
+            // arrows: this.arrows,
+            // blockers: this.blockers,
+            // base_posts: this.base_posts,
+            // board: this.board,
+            // slots: this.slots,
+            // station_slots: this.station_slots,
+            // move_history: this.move_history,
+            play_status: this.play_status,
+            // winners: this.winners
+        }
+    }
 }
 
 const game_state = new GameState()

@@ -1,9 +1,9 @@
 class Blocker {
   constructor({
-    color, 
-    from_station, 
-    to_station, 
-    slot_loc, 
+    color,
+    from_station,
+    to_station,
+    slot_loc,
     slot,
     station_slots,
     is_preview
@@ -26,5 +26,5 @@ class Blocker {
     this.to_move = false;
   }
 }
-  
+
 export default Blocker;

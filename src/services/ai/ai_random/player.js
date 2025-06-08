@@ -14,7 +14,6 @@ const agent = {
  */
 function move(color, game_state) {
     const move = new Promise(resolve => {
-
       // Tweaking the distribution of moves makes for
       // more interesting random game play, since there are
       // generally many more arrrow and blocker moves than ring

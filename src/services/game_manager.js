@@ -136,7 +136,7 @@ class GameManager {
   initiate_agent_move() {
     this.handle_player_agent_move(
       Object.keys(this.players).filter(key=>this.players[key])[this.game_state.turn_index],
-      this.players_to_agents[Object.keys(this.players)[this.game_state.turn_index]]);
+      this.players_to_agents[Object.keys(this.players).filter(key=>this.players[key])[this.game_state.turn_index]]);
   }
 
   /**
@@ -200,7 +200,14 @@ class GameManager {
   async handle_player_agent_move(player_moving, player_agent) {
     if (this.game_state.play_status !== 'over') {
       let this_gs_id = this.game_state.gs_id;
-      let move = await player_agent_moves[player_agent](player_moving, this.game_state);
+      let screenshot = null;
+      if (player_agent === 'ai-chatgpt') {
+        screenshot = await this.get_board_screenshot();
+      }
+      let move = await player_agent_moves[player_agent](
+        player_moving,
+        this.game_state,
+        screenshot);
       // move is instantiated only for non-local-human agents
       // local-human agents' moves are handled interactively
       if (move) {
@@ -419,6 +426,17 @@ class GameManager {
   get_game_state() {
     return this.game_state;
   }
+
+  /**
+   * Get screen shot of game board
+   *
+   * @returns {string}
+   */
+  get_board_screenshot = async () => {
+    const data_url = await this.app.get_board_screenshot();
+    return data_url;
+  }
+
 
   /**
    * Set whether game board needs redrawing

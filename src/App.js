@@ -5,6 +5,7 @@ import GameManager from "./services/game_manager";
 import FinityCanvas from "./components/FinityCanvas";
 import PlayerPanel from "./components/PlayerPanel";
 import PlayerPicker from "./components/PlayerPicker";
+import * as htmlToImage from 'html-to-image';
 
 import './App.css';
 
@@ -13,6 +14,19 @@ class App extends React.Component {
     super();
     this.gm = new GameManager();
     this.state = this.gm.get_game_state();
+    this.componentRef = React.createRef();
+  }
+
+  get_board_screenshot = async () => {
+    if (this.componentRef.current) {
+      const data_url = await htmlToImage.toPng(this.componentRef.current);
+      return data_url; // Return the data URL for further use
+    }
+  };
+
+  componentDidMount() {
+    // Access the input element after mounting
+    this.componentRef.current.focus();
   }
 
   render() {
@@ -21,7 +35,7 @@ class App extends React.Component {
         <div id="header">
           <div id="header-container">
             <a href="https://www.finitygame.com/" target="_blank" rel="noreferrer">
-              <img src={require("./img/FinityLogo50trans-01.png")} 
+              <img src={require("./img/FinityLogo50trans-01.png")}
                   alt="Finity Logo" id="finity-logo"/>
             </a>
           <span id="title">Finity AI Playground</span>
@@ -30,7 +44,7 @@ class App extends React.Component {
 
           <div id="controls">
             <div id="reset-btn" className="c-btns">
-              <img src={require("./img/noun-reset-outline.png")} 
+              <img src={require("./img/noun-reset-outline.png")}
                 height="35" alt="play button"
                 onMouseDown={e => (e.currentTarget.src = require("./img/noun-reset-solid.png"))}
                 onMouseUp={e => (e.currentTarget.src = require("./img/noun-reset-outline.png"))}>
@@ -51,7 +65,7 @@ class App extends React.Component {
                 onClick={() => this.gm.pause()}></img>
             </div>
             <div id="step-fwd-btn" className="c-btns">
-              <img src={require("./img/noun-step-fwd-outline.png")} 
+              <img src={require("./img/noun-step-fwd-outline.png")}
                 onMouseDown={e => (e.currentTarget.src = require("./img/noun-step-fwd-solid.png"))}
                 onMouseUp={e => (e.currentTarget.src = require("./img/noun-step-fwd-outline.png"))}
                 height="35" alt="step button"
@@ -86,7 +100,7 @@ class App extends React.Component {
           )}
         </div>
 
-        <div  id="finity">
+        <div  id="finity" ref={this.componentRef}>
           <FinityCanvas app={this} ></FinityCanvas>
         </div>
 
@@ -99,6 +113,10 @@ class App extends React.Component {
           )}
         </div>
       </div>
+        {/* <div>
+          // The .bind is necessary to maintain gm's this value
+          <button onClick={this.gm.get_board_screenshot.bind(this.gm)}>Download as Image</button>
+        </div> */}
     </div>
     );
   }
