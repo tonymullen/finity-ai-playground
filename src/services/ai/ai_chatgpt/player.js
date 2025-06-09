@@ -1,5 +1,4 @@
-/* TODO: it will be necessary to implement a backend
-api in order to use the OpenAI API */
+import env from 'react-dotenv';
 
 const agent = {
     "label": "ai_chatgpt",
@@ -122,6 +121,9 @@ removed or added rings) the game is a draw.
  * @returns {Move}
  */
 function move(color, game_state, screenshot) {
+    console.log(env.API_URL);
+
+
     console.log(game_state);
     // TODO: Fully implement toJSON in GameState
     console.log(JSON.stringify(game_state));
